@@ -14,11 +14,11 @@ resource "google_storage_bucket_object" "source" {
 
 # Cloud Function のデプロイ設定
 resource "google_cloudfunctions2_function" "function" {
-  name        = var.function_name
-  location    = var.region
-  
+  name     = var.function_name
+  location = var.region
+
   build_config {
-    runtime = "python311"
+    runtime     = "python311"
     entry_point = var.entry_point
     source {
       storage_source {

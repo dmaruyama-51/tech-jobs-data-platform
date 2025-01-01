@@ -7,7 +7,7 @@ terraform {
   backend "gcs" {
     # バックエンドの設定は -backend-config オプションで外部から注入
   }
-  
+
   required_providers {
     google = {
       source  = "hashicorp/google"
