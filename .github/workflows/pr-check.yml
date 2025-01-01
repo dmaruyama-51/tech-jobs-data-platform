@@ -1,11 +1,11 @@
-name: Pull Request Checks
+name: PR Checks
 
 on:
   pull_request:
     branches: [ main, develop ]
 
 jobs:
-  python-checks:
+  python-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
           make lint
           make format
 
-  terraform-plan:
+  terraform-check:
     runs-on: ubuntu-latest
     needs: python-checks
     steps:
@@ -42,7 +42,7 @@ jobs:
           cd terraform
           terraform init -backend=false
           terraform fmt -check -recursive
-          terraform validate
+          terraform validate -backend=false
           terraform plan -var-file=env/dev.tfvars -no-color > plan.txt
         continue-on-error: true
       
