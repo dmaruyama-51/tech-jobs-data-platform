@@ -44,4 +44,4 @@ jobs:
           cd terraform
           terraform init -backend=false
           terraform fmt -check -recursive
-          terraform validate -backend=false
+          terraform validate
