@@ -7,23 +7,39 @@ MYPY_OPTIONS = --install-types --non-interactive --ignore-missing-imports
 TF_DIR = ./terraform
 TF = terraform
 
-lint: 
-	${POETRY_RUN} mypy ${MYPY_OPTIONS} -p functions
-	${POETRY_RUN} ruff check . --fix
-format: 
-	${POETRY_RUN} ruff format .
+# 引数（dev or prod）に応じてプロジェクトIDを取得
+get_project_id = $(shell cat ${TF_DIR}/env/$(1).tfvars | grep project_id | cut -d'=' -f2 | tr -d '" ' )
 
-all: lint format
+tf-init-dev:
+	gcloud config set project $(call get_project_id,dev)
+	cd ${TF_DIR} && ${TF} init -reconfigure -backend-config=env/backend-dev.hcl
 
-tf-init:
-	cd ${TF_DIR} && ${TF} init
-tf-plan:
-	cd ${TF_DIR} && ${TF} plan
-tf-apply:
-	cd ${TF_DIR} && ${TF} apply
-tf-destroy:
-	cd ${TF_DIR} && ${TF} destroy
-tf-fmt:
-	cd ${TF_DIR} && ${TF} fmt
+tf-init-prod:
+	gcloud config set project $(call get_project_id,prod)
+	cd ${TF_DIR} && ${TF} init -reconfigure -backend-config=env/backend-prod.hcl
 
-.PHONY: lint format all tf-init tf-plan tf-apply tf-destroy tf-fmt
+tf-plan-dev:
+	gcloud config set project $(call get_project_id,dev)
+	cd ${TF_DIR} && ${TF} plan -var-file=env/dev.tfvars
+
+tf-plan-prod:
+	gcloud config set project $(call get_project_id,prod)
+	cd ${TF_DIR} && ${TF} plan -var-file=env/prod.tfvars
+
+tf-apply-dev:
+	gcloud config set project $(call get_project_id,dev)
+	cd ${TF_DIR} && ${TF} apply -var-file=env/dev.tfvars
+
+tf-apply-prod:
+	gcloud config set project $(call get_project_id,prod)
+	cd ${TF_DIR} && ${TF} apply -var-file=env/prod.tfvars
+
+tf-destroy-dev:
+	gcloud config set project $(call get_project_id,dev)
+	cd ${TF_DIR} && ${TF} destroy -var-file=env/dev.tfvars
+
+tf-destroy-prod:
+	gcloud config set project $(call get_project_id,prod)
+	cd ${TF_DIR} && ${TF} destroy -var-file=env/prod.tfvars
+
+.PHONY: lint format all tf-init-dev tf-init-prod tf-plan-dev tf-plan-prod tf-apply-dev tf-apply-prod tf-destroy-dev tf-destroy-prod
