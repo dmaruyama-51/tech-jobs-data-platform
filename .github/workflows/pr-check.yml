@@ -1,0 +1,72 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          
+      - name: Install dependencies
+        run: poetry install
+        
+      - name: Run all checks
+        run: |
+          make lint
+          make format
+
+  terraform-plan:
+    runs-on: ubuntu-latest
+    needs: python-checks
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - name: Run Terraform Checks and Plan
+        id: plan
+        run: |
+          cd terraform
+          terraform init -backend=false
+          terraform fmt -check -recursive
+          terraform validate
+          terraform plan -var-file=env/dev.tfvars -no-color > plan.txt
+        continue-on-error: true
+      
+      - name: Comment Plan
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan.txt', 'utf8');
+            const comment = `### Terraform Plan (Dev環境)
+            
+            <details><summary>詳細を表示</summary>
+            
+            \`\`\`hcl
+            ${plan}
+            \`\`\`
+            </details>`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            })
+      
+      - name: Check Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
