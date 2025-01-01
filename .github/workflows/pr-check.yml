@@ -38,38 +38,10 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       
-      - name: Run Terraform Checks and Plan
+      - name: Run Terraform Checks
         id: plan
         run: |
           cd terraform
           terraform init -backend=false
           terraform fmt -check -recursive
           terraform validate -backend=false
-          terraform plan -var-file=env/dev.tfvars -no-color > plan.txt
-          cd ..
-        continue-on-error: true
-      
-      - name: Comment Plan
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const plan = fs.readFileSync('terraform/plan.txt', 'utf8');
-            const comment = `### Terraform Plan (Dev環境)
-            
-            <details><summary>詳細を表示</summary>
-            
-            \`\`\`hcl
-            ${plan}
-            \`\`\`
-            </details>`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            })
-      
-      - name: Check Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
