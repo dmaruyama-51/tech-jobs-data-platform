@@ -46,6 +46,7 @@ jobs:
           terraform fmt -check -recursive
           terraform validate -backend=false
           terraform plan -var-file=env/dev.tfvars -no-color > plan.txt
+          cd ..
         continue-on-error: true
       
       - name: Comment Plan
