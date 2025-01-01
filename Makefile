@@ -11,8 +11,10 @@ MYPY_OPTIONS = --install-types --non-interactive --ignore-missing-imports
 lint: 
 	${POETRY_RUN} mypy ${MYPY_OPTIONS} -p functions
 	${POETRY_RUN} ruff check . --fix
+
 format: 
 	${POETRY_RUN} ruff format .
+
 
 # ==============================
 # Terraform
@@ -63,5 +65,14 @@ tf-check:
 	${TF} validate
 
 all-check: lint format tf-check
+
+# ==============================
+# 各functionのローカル実行
+# ==============================
+run-scraper:
+	PYTHONPATH=. ${POETRY_RUN} python functions/func_scraper/main.py
+
+run-hello:
+	PYTHONPATH=. ${POETRY_RUN} python functions/func_hello/main.py
 
 .PHONY: lint format tf-init-dev tf-init-prod tf-plan-dev tf-plan-prod tf-apply-dev tf-apply-prod tf-destroy-dev tf-destroy-prod tf-check all-check
