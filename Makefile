@@ -77,7 +77,7 @@ tf-check:
 all-check: lint format tf-check
 
 # ==============================
-# 各functionのローカル実行
+# functions_frameworkのローカル実行
 # ==============================
 run-scraper:
 	PYTHONPATH=functions ${POETRY_RUN} functions_framework --target scraping --source functions/func_scraper/main.py --port 8080
