@@ -1,5 +1,6 @@
 import functions_framework
 from flask import jsonify
+from datetime import datetime, timezone, timedelta
 import pandas as pd
 from utils.scraper import JobListScraper, JobDetailScraper
 from utils.parsers import JobDataParser
@@ -67,13 +68,13 @@ def save_to_gcs(df: pd.DataFrame, bucket_name: str) -> str:
     for blob in blobs:
         blob.delete()
 
-    # 新しいデータを保存
+    # データフレームが空でも保存を実行
+    # 空の場合はヘッダーのみのCSVファイルが作成される
     blob = bucket.blob(blob_name)
     with blob.open("w") as f:
         df.to_csv(f, index=False, encoding="utf-8")
 
     return blob_name
-
 
 def get_data_bucket_name() -> str:
     """スクレイピングデータ保存用のバケット名を生成"""
@@ -87,7 +88,12 @@ def get_data_bucket_name() -> str:
 def scraping(request):
     """Cloud Functions のエントリーポイント"""
     try:
-        service = JobScrapingService("2024-12-27")
+        # JSTでの現在日付 - 1日時点を取得
+        jst = datetime.now(timezone(timedelta(hours=9))) - timedelta(days=1)
+        limit_date = jst.strftime("%Y-%m-%d")
+
+        # 実行日 - 1日時点までをスクレイピング対象とする
+        service = JobScrapingService(limit_date)
         final_df = service.execute()
 
         # project_idから動的にバケット名を生成
