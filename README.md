@@ -31,8 +31,8 @@ The system integrates multiple GCP services to create the following workflow, en
 ### Scraping Process
 The scraping workflow runs daily to collect fresh job posting data:
 
-```Mermaid
-graph LR
+```mermaid
+graph TB
     A[Cloud Scheduler] -->|Daily at 5 AM| B[Pub/Sub Topic: job-scraper-topic]
     B -->|Push Notification| C[Pub/Sub Subscription]
     C -->|HTTP POST| D[Cloud Function: func_scraper]
@@ -45,8 +45,8 @@ graph LR
 
 When new data is saved to Cloud Storage, it automatically triggers the loading process to BigQuery:
 
-```Mermaid
-graph LR
+```mermaid
+graph TB
     A[Cloud Storage] -->|New File Creation| B[Storage Notification]
     B -->|Event Notification| C[Pub/Sub Topic: job-loader-trigger-topic]
     C -->|Push Notification| D[Pub/Sub Subscription]
