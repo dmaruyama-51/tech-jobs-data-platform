@@ -10,9 +10,9 @@ resource "null_resource" "prepare_source" {
       mkdir -p /tmp/function-source-temp
       
       # requirements.txtを生成
-      poetry export -f requirements.txt --only main,scraper --output ${var.source_dir}/requirements.txt --without-hashes --no-interaction --no-ansi
+      poetry export -f requirements.txt --only main,loader --output ${var.source_dir}/requirements.txt --without-hashes --no-interaction --no-ansi
       
-      # var.source_dir だけでなく shared ディレクトリも含める
+      # var.source_dir と shared ディレクトリを含める
       cp -r ${var.source_dir}/* /tmp/function-source-temp/
       cp -r ${path.root}/../functions/shared /tmp/function-source-temp/
     EOT
@@ -32,18 +32,6 @@ resource "google_storage_bucket_object" "source" {
   name   = "function-source-${data.archive_file.source.output_md5}.zip"
   bucket = var.bucket
   source = data.archive_file.source.output_path
-}
-
-# スクレイピング結果保存用のGCSバケット
-resource "google_storage_bucket" "scraping_data_bucket" {
-  name     = "${var.project_id}-scraping-data"
-  location = var.region
-
-  # バケットが既に存在する場合はエラーを無視
-  lifecycle {
-    prevent_destroy = false
-    ignore_changes  = all
-  }
 }
 
 # Cloud Function のデプロイ設定
@@ -67,16 +55,13 @@ resource "google_cloudfunctions2_function" "function" {
     available_memory   = "1024Mi"
     timeout_seconds    = 600
     environment_variables = {
-      PROJECT_ID       = var.project_id
-      PYTHONIOENCODING = "utf-8"
-      LANG             = "ja_JP.UTF-8"
+      PROJECT_ID = var.project_id
     }
   }
 
   lifecycle {
-    # ソースコードの変更をトリガーにしてリソースを置き換える
     replace_triggered_by = [
       google_storage_bucket_object.source
     ]
   }
-} 
+}

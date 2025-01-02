@@ -18,6 +18,7 @@ class HttpClient:
             self.logger.info(f"Sending GET request to: {url}")
             response = requests.get(url)
             response.raise_for_status()
+            response.encoding = "utf-8"
             return response
         except RequestException as e:
             self.logger.error(f"Request failed: {str(e)}")
