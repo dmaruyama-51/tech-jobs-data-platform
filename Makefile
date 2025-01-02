@@ -82,4 +82,7 @@ all-check: lint format tf-check
 run-scraper:
 	PYTHONPATH=functions ${POETRY_RUN} functions_framework --target scraping --source functions/func_scraper/main.py --port 8080
 
+run-loader:
+	PYTHONPATH=functions ${POETRY_RUN} functions_framework --target load_to_bigquery --source functions/func_loader/main.py --port 8080
+
 .PHONY: lint format tf-init-dev tf-init-prod tf-plan-dev tf-plan-prod tf-apply-dev tf-apply-prod tf-destroy-dev tf-destroy-prod tf-check all-check
