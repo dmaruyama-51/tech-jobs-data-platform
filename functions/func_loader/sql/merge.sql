@@ -1,4 +1,4 @@
-merge `{self.table_ref}` as T
+merge `{table_ref}` as T
 using `{temp_table}` as S
 on T.detail_link = S.detail_link
 when matched then

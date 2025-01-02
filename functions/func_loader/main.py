@@ -47,7 +47,7 @@ class JobDataLoader:
                 return False
 
             # フタデータを取得してサイズをチェック
-            blob.reload()  # メタデータを明示的に取得
+            blob.reload()
 
             # サイズが取得できない、または極端に小さい場合はエラー
             if not blob.size or blob.size < 50:
@@ -60,6 +60,75 @@ class JobDataLoader:
             self.logger.error(f"Error checking source file: {str(e)}")
             return False
 
+    def _ensure_dataset_exists(self, dataset_ref: str):
+        """データセットの存在確認と作成"""
+        try:
+            dataset = self.bq_client.get_dataset(dataset_ref)
+            self.logger.info(f"Dataset {dataset_ref} already exists")
+        except Exception:
+            dataset = bigquery.Dataset(dataset_ref)
+            dataset.location = "asia-northeast1"
+            dataset = self.bq_client.create_dataset(dataset, exists_ok=True)
+            self.logger.info(f"Created dataset: {dataset_ref}")
+
+    def _ensure_table_exists(self, table_ref: str, schema: list):
+        """テーブルの存在確認と作成"""
+        try:
+            self.bq_client.get_table(table_ref)
+            self.logger.info(f"Table {table_ref} already exists")
+        except Exception:
+            table = bigquery.Table(table_ref, schema=schema)
+            
+            # パーティション設定
+            table.time_partitioning = bigquery.TimePartitioning(
+                type_=bigquery.TimePartitioningType.DAY,
+                field="listing_start_date"
+            )
+
+            # Primary Key制約の設定
+            ddl_statement = f"""
+            ALTER TABLE `{table_ref}`
+            ADD PRIMARY KEY (detail_link) NOT ENFORCED
+            """
+            
+            table = self.bq_client.create_table(table, exists_ok=True)
+            self.logger.info(f"Created partitioned table: {table_ref}")
+            
+            # Primary Key制約を追加
+            try:
+                self.bq_client.query(ddl_statement).result()
+                self.logger.info(f"Primary key constraint added on: detail_link")
+            except Exception as e:
+                self.logger.warning(f"Failed to add primary key constraint: {str(e)}")
+
+    def _load_to_temp_table(self, source_path: str, temp_table: str, schema: list) -> int:
+        """一時テーブルへのデータロード"""
+        self.logger.info("Loading data to temporary table...")
+        job_config = bigquery.LoadJobConfig(
+            schema=schema,
+            source_format=bigquery.SourceFormat.CSV,
+            skip_leading_rows=1,
+            allow_quoted_newlines=True,
+            encoding="UTF-8"
+        )
+        load_job = self.bq_client.load_table_from_uri(
+            source_path, temp_table, job_config=job_config
+        )
+        load_job.result()
+        self.logger.info(f"Loaded {load_job.output_rows} rows to temporary table")
+        return load_job.output_rows
+
+    def _merge_data(self, temp_table: str):
+        """データのマージ処理"""
+        self.logger.info("Executing merge operation...")
+        merge_query = self._read_sql_file("merge.sql").format(
+            table_ref=self.table_ref,
+            temp_table=temp_table
+        )
+        merge_job = self.bq_client.query(merge_query)
+        merge_job.result()
+        self.logger.info("Merge operation completed")
+
     def execute(self) -> dict:
         """ロード処理を実行"""
         try:
@@ -68,8 +137,6 @@ class JobDataLoader:
             bucket_name = get_data_bucket_name()
             blob_name = f"raw/jobs/partition_date={partition_date}/jobs.csv"
             source_path = f"gs://{bucket_name}/{blob_name}"
-
-            self.logger.info(f"Source path: {source_path}")
 
             # テーブル参照を分解
             table_ref_parts = self.table_ref.split(".")
@@ -80,20 +147,7 @@ class JobDataLoader:
             dataset_ref = f"{project_id}.{dataset_id}"
             temp_table = f"{self.table_ref}_temp"
 
-            self.logger.info(f"Target table: {self.table_ref}")
-            self.logger.info(f"Temporary table: {temp_table}")
-
-            # データセットが存在しない場合は作成
-            try:
-                dataset = self.bq_client.get_dataset(dataset_ref)
-                self.logger.info(f"Dataset {dataset_id} already exists")
-            except Exception:
-                dataset = bigquery.Dataset(dataset_ref)
-                dataset.location = "asia-northeast1"
-                dataset = self.bq_client.create_dataset(dataset, exists_ok=True)
-                self.logger.info(f"Created dataset: {dataset_id}")
-
-            # テーブルが存在しない場合は作成
+            # スキーマ定義
             schema = [
                 bigquery.SchemaField("monthly_salary", "INTEGER"),
                 bigquery.SchemaField("occupation", "STRING"),
@@ -112,58 +166,24 @@ class JobDataLoader:
                 bigquery.SchemaField("number_of_applicants", "STRING"),
                 bigquery.SchemaField("job_title", "STRING"),
                 bigquery.SchemaField("listing_start_date", "DATE"),
-                bigquery.SchemaField("detail_link", "STRING"),
+                bigquery.SchemaField("detail_link", "STRING", mode="REQUIRED"),
             ]
-
-            # テーブルが存在しない場合は作成
-            table_ref = f"{dataset_ref}.{table_id}"
-            try:
-                self.bq_client.get_table(table_ref)
-                self.logger.info(f"Table {table_ref} already exists")
-            except Exception:
-                table = bigquery.Table(table_ref, schema=schema)
-
-                table.time_partitioning = bigquery.TimePartitioning(
-                    type_=bigquery.TimePartitioningType.DAY, field="listing_start_date"
-                )
-
-                table = self.bq_client.create_table(table, exists_ok=True)
-                self.logger.info(f"Created partitioned table: {table_ref}")
 
             # ソースファイルのチェック
             if not self.check_source_file(bucket_name, blob_name):
-                self.logger.warning("No source file found or file is empty")
                 return {
                     "status": "success",
                     "message": "No data to load",
                     "loaded_rows": 0,
                 }
 
-            # 一時テーブルにデータをロード
-            self.logger.info("Loading data to temporary table...")
-            job_config = bigquery.LoadJobConfig(
-                schema=schema,
-                source_format=bigquery.SourceFormat.CSV,
-                skip_leading_rows=1,
-                allow_quoted_newlines=True,
-                encoding="UTF-8",
-            )
-            load_job = self.bq_client.load_table_from_uri(
-                source_path, temp_table, job_config=job_config
-            )
-            load_job.result()
-            self.logger.info(f"Loaded {load_job.output_rows} rows to temporary table")
+            # データセットとテーブルの準備
+            self._ensure_dataset_exists(dataset_ref)
+            self._ensure_table_exists(self.table_ref, schema)
 
-            # マージクエリの実行
-            self.logger.info("Executing merge operation...")
-            merge_query = self._read_sql_file("merge.sql").format(
-                table_ref=self.table_ref,
-                temp_table=temp_table
-            )
-
-            # マージクエリの実行と結果の確認
-            merge_job = self.bq_client.query(merge_query)
-            _ = merge_job.result()
+            # データのロードとマージ
+            loaded_rows = self._load_to_temp_table(source_path, temp_table, schema)
+            self._merge_data(temp_table)
 
             # 一時テーブルの削除
             self.logger.info("Cleaning up temporary table...")
@@ -173,7 +193,7 @@ class JobDataLoader:
             result = {
                 "status": "success",
                 "message": f"Data loaded to {self.table_ref}",
-                "loaded_rows": load_job.output_rows,
+                "loaded_rows": loaded_rows,
             }
             self.logger.info(f"Load process completed: {result}")
             return result
