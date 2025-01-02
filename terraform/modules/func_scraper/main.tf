@@ -62,13 +62,13 @@ resource "google_storage_bucket" "scraping_data_bucket" {
 resource "google_cloud_scheduler_job" "scraper_scheduler" {
   name        = "daily-job-scraper"
   description = "Daily job data scraping scheduler"
-  schedule    = "0 5 * * *"  # 毎日午前5時に実行
+  schedule    = "0 5 * * *" # 毎日午前5時に実行
   time_zone   = "Asia/Tokyo"
 
   pubsub_target {
     topic_name = google_pubsub_topic.scraper_topic.id
-    data       = base64encode(jsonencode({
-      "type": "daily_scraping"
+    data = base64encode(jsonencode({
+      "type" : "daily_scraping"
     }))
   }
 }
@@ -113,7 +113,7 @@ resource "google_pubsub_subscription" "scraper_subscription" {
   }
 
   expiration_policy {
-    ttl = "604800s"  # 7日
+    ttl = "604800s" # 7日
   }
 }
 

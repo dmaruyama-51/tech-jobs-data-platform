@@ -101,9 +101,9 @@ resource "google_storage_notification" "notification" {
   payload_format = "JSON_API_V1"
   # 新しいオブジェクトが作成されるか、既存のオブジェクトが上書きされ、そのオブジェクトの新しい世代が作成されると送信
   # ref: https://cloud.google.com/functions/docs/calling/storage?hl=ja
-  event_types    = ["OBJECT_FINALIZE"]
-  topic         = google_pubsub_topic.storage_trigger_topic.id
-  depends_on    = [google_pubsub_topic_iam_member.storage_publisher]
+  event_types = ["OBJECT_FINALIZE"]
+  topic       = google_pubsub_topic.storage_trigger_topic.id
+  depends_on  = [google_pubsub_topic_iam_member.storage_publisher]
 }
 
 # Pub/Sub トピック
@@ -140,6 +140,6 @@ resource "google_pubsub_subscription" "storage_trigger_subscription" {
   }
 
   expiration_policy {
-    ttl = "604800s"  # 7日
+    ttl = "604800s" # 7日
   }
 }

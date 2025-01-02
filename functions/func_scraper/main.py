@@ -75,18 +75,20 @@ def scraping(request):
     try:
         # 昨日の日付を使用
         limit_date = get_yesterday_jst().strftime("%Y-%m-%d")
-        
+
         service = JobScrapingService(limit_date)
         final_df = service.execute()
 
         bucket_name = get_data_bucket_name()
         saved_path = save_to_gcs(final_df, bucket_name)
 
-        return jsonify({
-            "status": "success",
-            "message": f"Data saved to gs://{bucket_name}/{saved_path}",
-            "record_count": len(final_df),
-            "limit_date": limit_date,
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Data saved to gs://{bucket_name}/{saved_path}",
+                "record_count": len(final_df),
+                "limit_date": limit_date,
+            }
+        )
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
