@@ -6,15 +6,15 @@ resource "null_resource" "prepare_source" {
   provisioner "local-exec" {
     working_dir = path.root
     command     = <<EOT
-      rm -rf /tmp/function-source-temp
-      mkdir -p /tmp/function-source-temp
+      rm -rf /tmp/function-source-temp-${var.function_name}
+      mkdir -p /tmp/function-source-temp-${var.function_name}
       
       # requirements.txtを生成
       poetry export -f requirements.txt --only main,loader --output ${var.source_dir}/requirements.txt --without-hashes --no-interaction --no-ansi
       
       # var.source_dir と shared ディレクトリを含める
-      cp -r ${var.source_dir}/* /tmp/function-source-temp/
-      cp -r ${path.root}/../functions/shared /tmp/function-source-temp/
+      cp -r ${var.source_dir}/* /tmp/function-source-temp-${var.function_name}/
+      cp -r ${path.root}/../functions/shared /tmp/function-source-temp-${var.function_name}/
     EOT
   }
 }
@@ -23,8 +23,8 @@ resource "null_resource" "prepare_source" {
 data "archive_file" "source" {
   depends_on  = [null_resource.prepare_source]
   type        = "zip"
-  source_dir  = "/tmp/function-source-temp"
-  output_path = "/tmp/function-source.zip"
+  source_dir  = "/tmp/function-source-temp-${var.function_name}"
+  output_path = "/tmp/function-source-${var.function_name}.zip"
 }
 
 # ZIPファイルをGCSバケットにアップロード
