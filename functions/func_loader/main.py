@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from shared.logger_config import setup_logger
 from shared.gcs import get_data_bucket_name
 from shared.date_utils import get_jst_now
+from pathlib import Path
 
 load_dotenv()
 
@@ -25,6 +26,15 @@ class JobDataLoader:
         self.dataset_id = "lake__bigdata_navi"
         self.table_id = "joblist"
         self.table_ref = f"{self.project_id}.{self.dataset_id}.{self.table_id}"
+        
+        # SQLファイルのディレクトリパス
+        self.sql_dir = Path(__file__).parent / "sql"
+
+    def _read_sql_file(self, filename: str) -> str:
+        """SQLファイルを読み込む"""
+        file_path = self.sql_dir / filename
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
 
     def check_source_file(self, bucket_name: str, blob_name: str) -> bool:
         """ソースファイルの存在確認と内容チェック"""
@@ -146,76 +156,14 @@ class JobDataLoader:
 
             # マージクエリの実行
             self.logger.info("Executing merge operation...")
-            merge_query = f"""
-                merge `{self.table_ref}` as T
-                using `{temp_table}` as S
-                on T.detail_link = S.detail_link
-                when matched then
-                    update set
-                        monthly_salary = S.monthly_salary,
-                        occupation = S.occupation,
-                        work_type = S.work_type,
-                        work_location = S.work_location,
-                        industry = S.industry,
-                        job_content = S.job_content,
-                        required_skills = S.required_skills,
-                        preferred_skills = S.preferred_skills,
-                        programming_language = S.programming_language,
-                        tool = S.tool,
-                        framework = S.framework,
-                        rate_of_work = S.rate_of_work,
-                        number_of_recruitment_interviews = S.number_of_recruitment_interviews,
-                        number_of_days_worked = S.number_of_days_worked,
-                        number_of_applicants = S.number_of_applicants,
-                        job_title = S.job_title,
-                        listing_start_date = S.listing_start_date
-                when not matched then
-                    insert (
-                        monthly_salary,
-                        occupation,
-                        work_type,
-                        work_location,
-                        industry,
-                        job_content,
-                        required_skills,
-                        preferred_skills,
-                        programming_language,
-                        tool,
-                        framework,
-                        rate_of_work,
-                        number_of_recruitment_interviews,
-                        number_of_days_worked,
-                        number_of_applicants,
-                        job_title,
-                        listing_start_date,
-                        detail_link
-                    )
-                    values (
-                        S.monthly_salary,
-                        S.occupation,
-                        S.work_type,
-                        S.work_location,
-                        S.industry,
-                        S.job_content,
-                        S.required_skills,
-                        S.preferred_skills,
-                        S.programming_language,
-                        S.tool,
-                        S.framework,
-                        S.rate_of_work,
-                        S.number_of_recruitment_interviews,
-                        S.number_of_days_worked,
-                        S.number_of_applicants,
-                        S.job_title,
-                        S.listing_start_date,
-                        S.detail_link
-                    )
-            
-            """
+            merge_query = self._read_sql_file("merge.sql").format(
+                table_ref=self.table_ref,
+                temp_table=temp_table
+            )
 
+            # マージクエリの実行と結果の確認
             merge_job = self.bq_client.query(merge_query)
-            _ = merge_job.result()  # マージの完了を待つ
-            self.logger.info("Merge operation completed")
+            _ = merge_job.result()
 
             # 一時テーブルの削除
             self.logger.info("Cleaning up temporary table...")
