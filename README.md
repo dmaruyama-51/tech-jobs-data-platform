@@ -74,8 +74,15 @@ gcloud auth application-default login
 3. Create env files and set your PROJECT_ID:
 
 ```
-# functions/.env
+# .env.dev
 PROJECT_ID=your-project-id-dev
+
+# .env.prod
+PROJECT_ID=your-project-id-prod
+
+# functions/.env
+cd functions
+ln -s ../.env.dev .env
 
 # terraform/env/dev.tfvars
 project_id = your-project-id-dev

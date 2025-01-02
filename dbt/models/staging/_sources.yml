@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: lake__bigdata_navi
+    database: "{{ env_var('PROJECT_ID') }}"  # プロジェクトIDは環境変数から取得
+    schema: lake__bigdata_navi
+    tables:
+      - name: joblist
+        description: "スクレイピングした求人データ"
+        columns:
+          - name: detail_link
+            description: "求人詳細ページのURL"
+            tests:
+              - unique
+              - not_null
+          - name: listing_start_date
+            description: "掲載開始日"
+            tests:
+              - not_null
