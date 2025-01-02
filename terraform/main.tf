@@ -40,12 +40,12 @@ module "func_scraper" {
 
 # Loader
 module "func_loader" {
-  source = "./modules/func_loader"
-
+  source        = "./modules/func_loader"
   project_id    = var.project_id
   region        = var.region
   function_name = "loader"
   source_dir    = "${path.module}/../functions/func_loader"
   bucket        = google_storage_bucket.function_bucket.name
   entry_point   = "load_to_bigquery"
+  data_bucket   = "${var.project_id}-scraping-data"
 } 
