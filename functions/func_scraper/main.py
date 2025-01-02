@@ -73,11 +73,8 @@ class JobScrapingService:
 def scraping(request):
     """Cloud Functions のエントリーポイント"""
     try:
-        # リクエストからlimit_dateを取得（指定がない場合は昨日の日付を使用）
-        request_json = request.get_json() if request.is_json else {}
-        limit_date = request_json.get(
-            "limit_date", get_yesterday_jst().strftime("%Y-%m-%d")
-        )
+        # 昨日の日付を使用
+        limit_date = get_yesterday_jst().strftime("%Y-%m-%d")
 
         service = JobScrapingService(limit_date)
         final_df = service.execute()

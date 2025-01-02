@@ -27,3 +27,8 @@ variable "entry_point" {
   description = "エントリーポイントとなる関数名"
   type        = string
 }
+
+variable "data_bucket" {
+  description = "スクレイピングデータを格納するGCSバケット名"
+  type        = string
+}
