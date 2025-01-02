@@ -19,7 +19,7 @@ The system integrates multiple GCP services to create the following workflow:
 
 1. Scraping
 
-```Mermaid
+```mermaid
 graph LR
     A[Cloud Scheduler] -->|Daily at 5 AM| B[Pub/Sub Topic: job-scraper-topic]
     B -->|Push Notification| C[Pub/Sub Subscription]
@@ -31,7 +31,7 @@ graph LR
 
 2. Loading
 
-```Mermaid
+```mermaid
 graph LR
     A[Cloud Storage] -->|New File Creation| B[Storage Notification]
     B -->|Event Notification| C[Pub/Sub Topic: job-loader-trigger-topic]
