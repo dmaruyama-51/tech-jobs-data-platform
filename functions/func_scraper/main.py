@@ -1,8 +1,10 @@
+import functions_framework
+from flask import jsonify
 import pandas as pd
-from functions.func_scraper.utils.scraper import JobListScraper, JobDetailScraper
-from functions.func_scraper.utils.parsers import JobDataParser
-from functions.func_scraper.utils.http_client import HttpClient
-from functions.shared.logger_config import setup_logger
+from utils.scraper import JobListScraper, JobDetailScraper
+from utils.parsers import JobDataParser
+from utils.http_client import HttpClient
+from shared.logger_config import setup_logger
 
 
 class JobScrapingService:
@@ -43,17 +45,25 @@ class JobScrapingService:
             self.logger.error(f"Error during scraping: {str(e)}", exc_info=True)
             raise
 
-
-def main():
+@functions_framework.http
+def scraping(request):
+    """Cloud Functions のエントリーポイント"""
     try:
         service = JobScrapingService("2024-12-27")
         final_df = service.execute()
-        print(final_df)
-        return final_df
+        result = final_df.to_dict(orient='records')
+        return jsonify({
+            "status": "success",
+            "data": result
+        })
     except Exception as e:
-        print(f"実行中にエラーが発生しました: {e}")
-        raise
-
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 if __name__ == "__main__":
-    main()
+    # ローカルテスト用
+    service = JobScrapingService()
+    final_df = service.execute()
+    print(final_df)

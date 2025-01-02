@@ -28,7 +28,7 @@ def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
         "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    
+
     # 各ハンドラーにフォーマッターを設定
     stream_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)

@@ -1,6 +1,6 @@
 import pandas as pd
-from functions.func_scraper.utils.parsers import JobDataParser
-from functions.func_scraper.utils.http_client import HttpClient
+from utils.parsers import JobDataParser
+from utils.http_client import HttpClient
 import time
 
 

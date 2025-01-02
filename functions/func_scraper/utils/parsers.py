@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
-from functions.func_scraper.utils.models import JobTableData, JobBasicData
+from utils.models import JobTableData, JobBasicData
 import pandas as pd
 from typing import List, Dict
 import requests
-from functions.shared.logger_config import setup_logger
+from shared.logger_config import setup_logger
 
 
 class JobDataParser:

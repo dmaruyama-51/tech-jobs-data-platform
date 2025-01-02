@@ -1,7 +1,7 @@
 import requests
 from requests.exceptions import RequestException
 from urllib.parse import urljoin
-from functions.shared.logger_config import setup_logger
+from shared.logger_config import setup_logger
 
 
 class HttpClient:

@@ -13,13 +13,25 @@ resource "google_storage_bucket" "function_bucket" {
 # ================================
 
 # Hello World
-module "func_hello" {
-  source = "./modules/func_hello"
+# module "func_hello" {
+#   source = "./modules/func_hello"
+
+#  project_id    = var.project_id
+#  region        = var.region
+#  function_name = "hello"
+#  source_dir    = "${path.module}/../functions/func_hello"
+#  bucket        = google_storage_bucket.function_bucket.name
+#  entry_point   = "hello_world"
+#} 
+
+# Scraping
+module "func_scraper" {
+  source = "./modules/func_scraper"
 
   project_id    = var.project_id
   region        = var.region
-  function_name = "hello"
-  source_dir    = "${path.module}/../functions/func_hello"
+  function_name = "scraper"
+  source_dir    = "${path.module}/../functions/func_scraper"
   bucket        = google_storage_bucket.function_bucket.name
-  entry_point   = "hello_world"
+  entry_point   = "scraping"
 } 
