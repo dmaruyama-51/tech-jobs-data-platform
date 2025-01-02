@@ -15,6 +15,18 @@ lint:
 format: 
 	${POETRY_RUN} ruff format .
 
+# ==============================
+# dbt
+# ==============================
+
+DBT = cd dbt && ${POETRY_RUN} dbt
+
+dbt-run-dev:
+	source .env.dev && $(DBT) run --target dev
+
+dbt-run-prod:
+	source .env.prod && $(DBT) run --target prod
+
 
 # ==============================
 # Terraform
