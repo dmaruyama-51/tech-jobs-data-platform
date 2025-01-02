@@ -7,6 +7,7 @@ from shared.logger_config import setup_logger
 from shared.gcs import get_data_bucket_name
 from shared.date_utils import get_jst_now
 from pathlib import Path
+from shared.bigquery import ensure_dataset_exists, ensure_table_exists
 
 load_dotenv()
 
@@ -36,7 +37,7 @@ class JobDataLoader:
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
 
-    def check_source_file(self, bucket_name: str, blob_name: str) -> bool:
+    def _check_source_file(self, bucket_name: str, blob_name: str) -> bool:
         """ソースファイルの存在確認と内容チェック"""
         try:
             bucket = self.storage_client.bucket(bucket_name)
@@ -59,46 +60,6 @@ class JobDataLoader:
         except Exception as e:
             self.logger.error(f"Error checking source file: {str(e)}")
             return False
-
-    def _ensure_dataset_exists(self, dataset_ref: str):
-        """データセットの存在確認と作成"""
-        try:
-            dataset = self.bq_client.get_dataset(dataset_ref)
-            self.logger.info(f"Dataset {dataset_ref} already exists")
-        except Exception:
-            dataset = bigquery.Dataset(dataset_ref)
-            dataset.location = "asia-northeast1"
-            dataset = self.bq_client.create_dataset(dataset, exists_ok=True)
-            self.logger.info(f"Created dataset: {dataset_ref}")
-
-    def _ensure_table_exists(self, table_ref: str, schema: list):
-        """テーブルの存在確認と作成"""
-        try:
-            self.bq_client.get_table(table_ref)
-            self.logger.info(f"Table {table_ref} already exists")
-        except Exception:
-            table = bigquery.Table(table_ref, schema=schema)
-
-            # パーティション設定
-            table.time_partitioning = bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY, field="listing_start_date"
-            )
-
-            # Primary Key制約の設定
-            ddl_statement = f"""
-            ALTER TABLE `{table_ref}`
-            ADD PRIMARY KEY (detail_link) NOT ENFORCED
-            """
-
-            table = self.bq_client.create_table(table, exists_ok=True)
-            self.logger.info(f"Created partitioned table: {table_ref}")
-
-            # Primary Key制約を追加
-            try:
-                self.bq_client.query(ddl_statement).result()
-                self.logger.info(f"Primary key constraint added on: detail_link")
-            except Exception as e:
-                self.logger.warning(f"Failed to add primary key constraint: {str(e)}")
 
     def _load_to_temp_table(
         self, source_path: str, temp_table: str, schema: list
@@ -170,16 +131,15 @@ class JobDataLoader:
             ]
 
             # ソースファイルのチェック
-            if not self.check_source_file(bucket_name, blob_name):
+            if not self._check_source_file(bucket_name, blob_name):
                 return {
                     "status": "success",
                     "message": "No data to load",
                     "loaded_rows": 0,
                 }
 
-            # データセットとテーブルの準備
-            self._ensure_dataset_exists(dataset_ref)
-            self._ensure_table_exists(self.table_ref, schema)
+            ensure_dataset_exists(self.bq_client, dataset_ref)
+            ensure_table_exists(self.bq_client, self.table_ref, schema)
 
             # データのロードとマージ
             loaded_rows = self._load_to_temp_table(source_path, temp_table, schema)
