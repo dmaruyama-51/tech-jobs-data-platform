@@ -26,14 +26,14 @@ class JobDataLoader:
         self.dataset_id = "lake__bigdata_navi"
         self.table_id = "joblist"
         self.table_ref = f"{self.project_id}.{self.dataset_id}.{self.table_id}"
-        
+
         # SQLファイルのディレクトリパス
         self.sql_dir = Path(__file__).parent / "sql"
 
     def _read_sql_file(self, filename: str) -> str:
         """SQLファイルを読み込む"""
         file_path = self.sql_dir / filename
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
 
     def check_source_file(self, bucket_name: str, blob_name: str) -> bool:
@@ -78,11 +78,10 @@ class JobDataLoader:
             self.logger.info(f"Table {table_ref} already exists")
         except Exception:
             table = bigquery.Table(table_ref, schema=schema)
-            
+
             # パーティション設定
             table.time_partitioning = bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY,
-                field="listing_start_date"
+                type_=bigquery.TimePartitioningType.DAY, field="listing_start_date"
             )
 
             # Primary Key制約の設定
@@ -90,10 +89,10 @@ class JobDataLoader:
             ALTER TABLE `{table_ref}`
             ADD PRIMARY KEY (detail_link) NOT ENFORCED
             """
-            
+
             table = self.bq_client.create_table(table, exists_ok=True)
             self.logger.info(f"Created partitioned table: {table_ref}")
-            
+
             # Primary Key制約を追加
             try:
                 self.bq_client.query(ddl_statement).result()
@@ -101,7 +100,9 @@ class JobDataLoader:
             except Exception as e:
                 self.logger.warning(f"Failed to add primary key constraint: {str(e)}")
 
-    def _load_to_temp_table(self, source_path: str, temp_table: str, schema: list) -> int:
+    def _load_to_temp_table(
+        self, source_path: str, temp_table: str, schema: list
+    ) -> int:
         """一時テーブルへのデータロード"""
         self.logger.info("Loading data to temporary table...")
         job_config = bigquery.LoadJobConfig(
@@ -109,7 +110,7 @@ class JobDataLoader:
             source_format=bigquery.SourceFormat.CSV,
             skip_leading_rows=1,
             allow_quoted_newlines=True,
-            encoding="UTF-8"
+            encoding="UTF-8",
         )
         load_job = self.bq_client.load_table_from_uri(
             source_path, temp_table, job_config=job_config
@@ -122,8 +123,7 @@ class JobDataLoader:
         """データのマージ処理"""
         self.logger.info("Executing merge operation...")
         merge_query = self._read_sql_file("merge.sql").format(
-            table_ref=self.table_ref,
-            temp_table=temp_table
+            table_ref=self.table_ref, temp_table=temp_table
         )
         merge_job = self.bq_client.query(merge_query)
         merge_job.result()
@@ -213,10 +213,3 @@ def load_to_bigquery(request):
         return jsonify(result)
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-if __name__ == "__main__":
-    # ローカルテスト用
-    loader = JobDataLoader()
-    result = loader.execute()
-    print(result)

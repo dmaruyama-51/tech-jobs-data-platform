@@ -95,10 +95,3 @@ def scraping(request):
         )
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-if __name__ == "__main__":
-    # ローカルテスト用
-    service = JobScrapingService()
-    final_df = service.execute()
-    print(final_df)
