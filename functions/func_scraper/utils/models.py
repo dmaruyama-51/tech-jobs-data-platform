@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass
 class JobListData:
     """求人一覧ページのデータを格納するデータクラス"""

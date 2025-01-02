@@ -15,29 +15,24 @@ class JobDataParser:
     def parse_list_page(self, html_content: requests.Response) -> pd.DataFrame:
         """一覧ページのパース"""
         self.logger.info("Parsing list page")
-        soup = BeautifulSoup(html_content.content, "html.parser", from_encoding='utf-8')
-        
+        soup = BeautifulSoup(html_content.content, "html.parser", from_encoding="utf-8")
+
         # 各要素を個別に取得
         job_titles = self._extract_job_titles(soup)
         listing_dates = self._extract_listing_dates(soup)
         detail_links = self._extract_detail_links(soup)
-        
+
         # 各要素をリストとしてDataFrameを作成
         job_list_data = [
-            JobListData(
-                job_title=title,
-                listing_start_date=date,
-                detail_link=link
-            )
+            JobListData(job_title=title, listing_start_date=date, detail_link=link)
             for title, date, link in zip(job_titles, listing_dates, detail_links)
         ]
-        
+
         df = pd.DataFrame([vars(data) for data in job_list_data])
-        
+
         # 掲載開始日を日付型に変換
         df["listing_start_date"] = pd.to_datetime(
-            df["listing_start_date"].tolist(),
-            format="%Y年%m月%d日"
+            df["listing_start_date"].tolist(), format="%Y年%m月%d日"
         )
 
         self.logger.info(f"Found {len(df)} jobs in list page")

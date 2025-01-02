@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 import os
 
 # 環境変数でエンコーディングを設定
-os.environ['PYTHONIOENCODING'] = 'utf-8'
-os.environ['LANG'] = 'ja_JP.UTF-8'
+os.environ["PYTHONIOENCODING"] = "utf-8"
+os.environ["LANG"] = "ja_JP.UTF-8"
 
 load_dotenv()
 
@@ -50,10 +50,9 @@ class JobScrapingService:
             for i, url in enumerate(list_df.detail_link, 1):
                 self.logger.info(f"Scraping detail page {i}/{total}")
                 detail_df = self.detail_scraper.scrape_detail(url)
-                detail_df = pd.concat([
-                    detail_df,
-                    list_df.iloc[[i-1]].reset_index(drop=True)
-                ], axis=1)
+                detail_df = pd.concat(
+                    [detail_df, list_df.iloc[[i - 1]].reset_index(drop=True)], axis=1
+                )
                 detail_df_list.append(detail_df)
 
             # detail_df_listが空でない場合のみconcatを実行
@@ -76,7 +75,9 @@ def scraping(request):
     try:
         # リクエストからlimit_dateを取得（指定がない場合は昨日の日付を使用）
         request_json = request.get_json() if request.is_json else {}
-        limit_date = request_json.get('limit_date', get_yesterday_jst().strftime("%Y-%m-%d"))
+        limit_date = request_json.get(
+            "limit_date", get_yesterday_jst().strftime("%Y-%m-%d")
+        )
 
         service = JobScrapingService(limit_date)
         final_df = service.execute()
@@ -89,7 +90,7 @@ def scraping(request):
                 "status": "success",
                 "message": f"Data saved to gs://{bucket_name}/{saved_path}",
                 "record_count": len(final_df),
-                "limit_date": limit_date
+                "limit_date": limit_date,
             }
         )
     except Exception as e:
