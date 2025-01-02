@@ -1,4 +1,4 @@
-from google.cloud import storage
+from google.cloud import storage  # type: ignore
 import os
 from datetime import datetime
 import pandas as pd

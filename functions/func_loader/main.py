@@ -1,6 +1,6 @@
 import functions_framework
 from flask import jsonify
-from google.cloud import bigquery, storage
+from google.cloud import bigquery, storage  # type: ignore
 import os
 from dotenv import load_dotenv
 from shared.logger_config import setup_logger

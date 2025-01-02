@@ -36,7 +36,7 @@ module "func_scraper" {
   bucket        = google_storage_bucket.function_bucket.name
   data_bucket   = "${var.project_id}-scraping-data"
   entry_point   = "scraping"
-} 
+}
 
 # Loader
 module "func_loader" {

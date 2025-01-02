@@ -67,9 +67,9 @@ resource "google_cloudfunctions2_function" "function" {
     available_memory   = "1024Mi"
     timeout_seconds    = 600
     environment_variables = {
-      PROJECT_ID = var.project_id
+      PROJECT_ID       = var.project_id
       PYTHONIOENCODING = "utf-8"
-      LANG = "ja_JP.UTF-8"
+      LANG             = "ja_JP.UTF-8"
     }
   }
 
