@@ -5,7 +5,7 @@ resource "null_resource" "prepare_source" {
 
   provisioner "local-exec" {
     working_dir = path.root
-    command = <<EOT
+    command     = <<EOT
       rm -rf /tmp/function-source-temp
       mkdir -p /tmp/function-source-temp
       
@@ -42,7 +42,7 @@ resource "google_storage_bucket" "scraping_data_bucket" {
   # バケットが既に存在する場合はエラーを無視
   lifecycle {
     prevent_destroy = false
-    ignore_changes = all
+    ignore_changes  = all
   }
 }
 
