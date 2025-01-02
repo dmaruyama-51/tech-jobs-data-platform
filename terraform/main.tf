@@ -8,6 +8,7 @@ resource "google_storage_bucket" "function_bucket" {
   location = var.region
 }
 
+
 # ================================
 # デプロイする各関数
 # ================================
@@ -33,5 +34,6 @@ module "func_scraper" {
   function_name = "scraper"
   source_dir    = "${path.module}/../functions/func_scraper"
   bucket        = google_storage_bucket.function_bucket.name
+  data_bucket   = "${var.project_id}-scraping-data"
   entry_point   = "scraping"
 } 

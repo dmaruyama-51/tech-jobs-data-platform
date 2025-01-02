@@ -10,6 +10,7 @@ python = "^3.11"
 functions-framework = "^3.8.2"
 google-cloud-storage = "^2.19.0"
 pandas = "^2.2.3"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

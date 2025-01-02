@@ -26,4 +26,9 @@ variable "bucket" {
 variable "entry_point" {
   description = "Cloud Function のエントリーポイント"
   type        = string
+}
+
+variable "data_bucket" {
+  description = "スクレイピングデータを格納するGCSバケット名"
+  type        = string
 } 
