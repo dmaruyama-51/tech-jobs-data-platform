@@ -15,7 +15,7 @@ load_dotenv()
 
 
 class JobScrapingService:
-    """スクレイピング全体の制御を担当"""
+    """スクレイピング全体の制御"""
 
     def __init__(self, scrape_limit_date: str = "2024-12-27"):
         self.logger = setup_logger("job_scraper")

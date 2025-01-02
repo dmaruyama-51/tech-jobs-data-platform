@@ -7,7 +7,7 @@ from shared.logger_config import setup_logger
 
 
 class JobDataParser:
-    """HTMLパースを担当"""
+    """HTMLパーサー"""
 
     def __init__(self):
         self.logger = setup_logger("job_parser")
