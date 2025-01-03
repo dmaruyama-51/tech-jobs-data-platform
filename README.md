@@ -3,6 +3,7 @@
 ## Overview
 tech-jobs-data-platform is a data infrastructure system for analyzing technology-related job data. It provides a mechanism for scraping data from job sites and leveraging Google Cloud Platform (GCP) to efficiently manage and analyze the data.
 
+![architecture](./images/architecture.png)
 
 ## Technical Stack
 
@@ -23,37 +24,6 @@ tech-jobs-data-platform is a data infrastructure system for analyzing technology
 - **Ruff** for linting and formatting
 - **MyPy** for type checking
 
-
-## Functions & Executing Flow
-
-The system integrates multiple GCP services to create the following workflow, enabling automated data collection and processing:
-
-### Scraping Process
-The scraping workflow runs daily to collect fresh job posting data:
-
-```mermaid
-graph TB
-    A[Cloud Scheduler] -->|Daily at 5 AM| B[Pub/Sub Topic: job-scraper-topic]
-    B -->|Push Notification| C[Pub/Sub Subscription]
-    C -->|HTTP POST| D[Cloud Function: func_scraper]
-    D -->|Execute Scraping| E[Recuiting Site]
-    E -->|Retrieve Data| D
-    D -->|Save CSV| F[Cloud Storage]
-```
-
-### Loading Process
-
-When new data is saved to Cloud Storage, it automatically triggers the loading process to BigQuery:
-
-```mermaid
-graph TB
-    A[Cloud Storage] -->|New File Creation| B[Storage Notification]
-    B -->|Event Notification| C[Pub/Sub Topic: job-loader-trigger-topic]
-    C -->|Push Notification| D[Pub/Sub Subscription]
-    D -->|HTTP POST| E[Cloud Function: func_loader]
-    E -->|Read Data| F[Cloud Storage]
-    E -->|Load Data| G[BigQuery]
-```
 
 ## Development Setup
 
