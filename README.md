@@ -30,7 +30,7 @@ tech-jobs-data-platform is a data infrastructure system for analyzing technology
 1. Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/your-repo/tech-jobs-data-platform.git
+git clone https://github.com/dmaruyama-51/tech-jobs-data-platform.git
 cd tech-jobs-data-platform
 poetry install
 ```
