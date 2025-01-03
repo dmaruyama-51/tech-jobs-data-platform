@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from shared.logger_config import setup_logger
 from shared.gcs import get_data_bucket_name
-from shared.date_utils import get_jst_now
+from shared.date_utils import get_yesterday_jst
 from pathlib import Path
 from shared.bigquery import ensure_dataset_exists, ensure_table_exists
 
@@ -94,7 +94,7 @@ class JobDataLoader:
         """ロード処理を実行"""
         try:
             self.logger.info("Starting data load process...")
-            partition_date = get_jst_now().strftime("%Y%m%d")
+            partition_date = get_yesterday_jst().strftime("%Y%m%d")
             bucket_name = get_data_bucket_name()
             blob_name = f"raw/jobs/partition_date={partition_date}/jobs.csv"
             source_path = f"gs://{bucket_name}/{blob_name}"
