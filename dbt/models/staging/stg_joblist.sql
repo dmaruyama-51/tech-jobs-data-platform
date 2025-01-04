@@ -4,9 +4,8 @@ with source as (
 ),
 
 staged as (
-    select
-        -- 後ほど整形
-        *
+    select *
+    -- 後ほど整形
     from source
 )
 
