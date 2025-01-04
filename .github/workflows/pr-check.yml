@@ -11,7 +11,7 @@ permissions:
   pull-requests: write  # PRへのコメント権限を追加
 
 jobs:
-  python-check:
+  python-sql-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,10 +28,11 @@ jobs:
       - name: Install dependencies
         run: poetry install
         
-      - name: Run all checks
+      - name: Run lint and format
         run: |
           make lint
           make format
+          make sql-lint
 
       - name: Run pytest
         run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
