@@ -1,11 +1,11 @@
 version: 2
 
 sources:
-  - name: lake__bigdata_navi
+  - name: bigdata_navi
     database: "{{ env_var('PROJECT_ID') }}"  # プロジェクトIDは環境変数から取得
-    schema: lake__bigdata_navi
+    schema: bigdata_navi
     tables:
-      - name: joblist
+      - name: lake__joblist
         description: "スクレイピングした求人データ"
         columns:
           - name: detail_link
@@ -17,3 +17,35 @@ sources:
             description: "掲載開始日"
             tests:
               - not_null
+          - name: monthly_salary
+            description: "月給"
+          - name: occupation
+            description: "職種"
+          - name: work_type
+            description: "雇用形態"
+          - name: work_location
+            description: "勤務地"
+          - name: industry
+            description: "業界"
+          - name: job_content
+            description: "案件内容"
+          - name: required_skills
+            description: "必須スキル"
+          - name: preferred_skills
+            description: "尚可スキル"
+          - name: programming_language
+            description: "プログラミング言語"
+          - name: tool
+            description: "環境・ツール"
+          - name: framework
+            description: "フレームワーク・ライブラリ"
+          - name: rate_of_work
+            description: "稼働率"
+          - name: number_of_recruitment_interviews
+            description: "面談回数"
+          - name: number_of_days_worked
+            description: "稼働日数"
+          - name: number_of_applicants
+            description: "募集人数"
+          - name: job_title
+            description: "求人タイトル"
