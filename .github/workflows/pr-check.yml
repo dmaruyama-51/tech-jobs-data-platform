@@ -6,6 +6,10 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write  # PRへのコメント権限を追加
+
 jobs:
   python-check:
     runs-on: ubuntu-latest
@@ -28,6 +32,15 @@ jobs:
         run: |
           make lint
           make format
+
+      - name: Run pytest
+        run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
 
   terraform-check:
     runs-on: ubuntu-latest
