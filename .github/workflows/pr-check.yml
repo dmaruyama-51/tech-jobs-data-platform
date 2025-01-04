@@ -30,7 +30,7 @@ jobs:
           make format
 
       - name: Run pytest
-        run: poetry run pytest --cov=src --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
+        run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
 
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
