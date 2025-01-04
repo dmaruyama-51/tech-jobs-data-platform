@@ -24,8 +24,8 @@ class JobDataLoader:
         self.bq_client = bigquery.Client()
         self.storage_client = storage.Client()
 
-        self.dataset_id = "lake__bigdata_navi"
-        self.table_id = "joblist"
+        self.dataset_id = "bigdata_navi"
+        self.table_id = "lake__joblist"
         self.table_ref = f"{self.project_id}.{self.dataset_id}.{self.table_id}"
 
         # SQLファイルのディレクトリパス

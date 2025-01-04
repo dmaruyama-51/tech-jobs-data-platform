@@ -6,7 +6,7 @@
 
 with source as (
     select *
-    from {{ source('lake__bigdata_navi', 'joblist') }}
+    from {{ source('bigdata_navi', 'lake__joblist') }}
 ),
 
 staged as (
