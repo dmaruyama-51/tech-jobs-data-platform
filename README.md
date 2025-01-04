@@ -7,6 +7,12 @@ tech-jobs-data-platform is a data infrastructure system for analyzing technology
 
 ## Technical Stack
 
+### Data Transformation
+- **dbt** for data transformation and modeling
+  - Modular SQL development
+  - Data documentation
+  - Data quality testing
+
 ### Cloud Services (GCP)
 - **Cloud Run Functions (2nd gen)**
 - **Cloud Storage** for source code and scraped data
@@ -23,6 +29,8 @@ tech-jobs-data-platform is a data infrastructure system for analyzing technology
 - **Poetry** for dependency management
 - **Ruff** for linting and formatting
 - **MyPy** for type checking
+- **pytest** for testing Python code
+- **SQLFluff** for SQL linting and formatting
 
 
 ## Development Setup
