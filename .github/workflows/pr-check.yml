@@ -6,6 +6,10 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write  # PRへのコメント権限を追加
+
 jobs:
   python-check:
     runs-on: ubuntu-latest
