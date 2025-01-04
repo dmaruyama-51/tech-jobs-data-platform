@@ -22,13 +22,13 @@ test:
 # dbt
 # ==============================
 
-DBT = cd dbt && ${POETRY_RUN} dbt
+DBT = cd dbt && DBT_PROFILES_DIR=~/.dbt ${POETRY_RUN} dbt
 
 dbt-run-dev:
-	source .env.dev && $(DBT) run --target dev
+	set -a && source .env.dev && set +a && $(DBT) run --target dev
 
 dbt-run-prod:
-	source .env.prod && $(DBT) run --target prod
+	set -a && source .env.prod && set +a && $(DBT) run --target prod
 
 sql-lint:
 	${POETRY_RUN} sqlfluff lint dbt/models/
