@@ -29,9 +29,6 @@ def ensure_table_exists(client: bigquery.Client, table_ref: str, schema: list):
             type_=bigquery.TimePartitioningType.DAY, field="listing_start_date"
         )
 
-        # クラスタリング設定
-        table.clustering_fields = ["occupation", "work_location"]
-
         # テーブルを作成
         table = client.create_table(table, exists_ok=True)
         logger.info(f"Created partitioned table: {table_ref}")

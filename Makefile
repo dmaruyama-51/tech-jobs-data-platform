@@ -15,6 +15,9 @@ lint:
 format: 
 	${POETRY_RUN} ruff format .
 
+test:
+	${POETRY_RUN} pytest tests/
+
 # ==============================
 # dbt
 # ==============================
