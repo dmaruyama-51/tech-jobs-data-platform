@@ -30,6 +30,12 @@ dbt-run-dev:
 dbt-run-prod:
 	source .env.prod && $(DBT) run --target prod
 
+sql-lint:
+	${POETRY_RUN} sqlfluff lint dbt/models/
+
+sql-fix:
+	${POETRY_RUN} sqlfluff fix dbt/models/
+
 
 # ==============================
 # Terraform
