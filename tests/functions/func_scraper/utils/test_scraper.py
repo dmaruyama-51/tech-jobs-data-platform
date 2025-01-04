@@ -1,23 +1,27 @@
 import pytest
 import pandas as pd
 from func_scraper.utils.scraper import JobListScraper, JobDetailScraper
-from datetime import datetime
+
 
 @pytest.fixture
 def mock_http_client(mocker):
     return mocker.Mock()
 
+
 @pytest.fixture
 def mock_parser(mocker):
     return mocker.Mock()
+
 
 @pytest.fixture
 def list_scraper(mock_http_client, mock_parser):
     return JobListScraper(mock_http_client, mock_parser)
 
+
 @pytest.fixture
 def detail_scraper(mock_http_client, mock_parser):
     return JobDetailScraper(mock_http_client, mock_parser)
+
 
 def test_scrape_page(list_scraper, mock_http_client, mock_parser):
     """1ページ分の求人一覧取得をテスト
@@ -39,6 +43,7 @@ def test_scrape_page(list_scraper, mock_http_client, mock_parser):
     mock_parser.parse_list_page.assert_called_once_with(mock_response)
     pd.testing.assert_frame_equal(result, expected_df)
 
+
 def test_scrape_all_pages(list_scraper, mock_http_client, mock_parser):
     """全ページのスクレイピングをテスト
     1. 日付による取得制限が機能すること
@@ -48,12 +53,9 @@ def test_scrape_all_pages(list_scraper, mock_http_client, mock_parser):
     3. DataFrameの結合と日付フィルタリングが正しく行われること
     """
     # モックの戻り値を設定
-    mock_df = pd.DataFrame({
-        "listing_start_date": [
-            pd.Timestamp("2025-01-05"),
-            pd.Timestamp("2024-12-28")
-        ]
-    })
+    mock_df = pd.DataFrame(
+        {"listing_start_date": [pd.Timestamp("2025-01-05"), pd.Timestamp("2024-12-28")]}
+    )
     mock_parser.parse_list_page.return_value = mock_df
 
     # テスト実行
@@ -63,6 +65,7 @@ def test_scrape_all_pages(list_scraper, mock_http_client, mock_parser):
     # 検証
     assert len(result) == 1  # limit_date以降のデータのみ
     assert mock_http_client.get.call_count == 1  # 1ページ目で終了
+
 
 def test_scrape_detail(detail_scraper, mock_http_client, mock_parser):
     """詳細ページのスクレイピングをテスト
