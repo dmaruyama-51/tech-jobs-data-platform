@@ -45,7 +45,7 @@ jobs:
 
   terraform-check:
     runs-on: ubuntu-latest
-    needs: python-check
+    needs: python-sql-check
     steps:
       - uses: actions/checkout@v4
       
