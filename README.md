@@ -5,6 +5,9 @@ tech-jobs-data-platform is a data infrastructure system for analyzing technology
 
 ![architecture](./images/architecture.png)
 
+[See here](https://github.com/dmaruyama-51/tech-jobs-data-platform/tree/main/dbt#data-model-structure) for more information on data transform.
+
+
 ## Technical Stack
 
 ### Data Transformation
