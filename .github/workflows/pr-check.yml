@@ -53,11 +53,12 @@ jobs:
                 threads: 1
                 type: bigquery
           EOF
-          
+
       - name: Install dbt packages
         run: cd dbt && poetry run dbt deps
 
       - name: Run dbt test
+        shell: bash
         run: make dbt-test-dev
 
       - name: Run pytest
