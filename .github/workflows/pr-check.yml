@@ -9,30 +9,20 @@ on:
 permissions:
   contents: read
   pull-requests: write  # PRへのコメント権限を追加
+  id-token: write  # Workload Identity Federation用の権限を追加
 
 jobs:
-  python-sql-check:
+  python-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-python-poetry
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          
-      - name: Install dependencies
-        run: poetry install
-        
       - name: Run lint and format
         run: |
           make lint
           make format
-          make sql-lint
 
       - name: Run pytest
         run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
@@ -43,9 +33,55 @@ jobs:
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml
 
+  dbt-check:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ secrets.DEV_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER_DEV }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_DEV }}
+          
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - uses: ./.github/actions/setup-python-poetry
+
+      - name: Setup dbt
+        run: |
+          mkdir -p ~/.dbt
+          cat << EOF > ~/.dbt/profiles.yml
+          dbt_project:
+            target: dev
+            outputs:
+              dev:
+                dataset: bigdata_navi
+                job_execution_timeout_seconds: 300
+                job_retries: 1
+                location: asia-northeast1
+                method: oauth
+                project: $PROJECT_ID
+                threads: 1
+                type: bigquery
+          EOF
+      
+      - name: Run lint and format
+        run: make sql-lint
+
+      - name: Install dbt packages
+        run: cd dbt && poetry run dbt deps
+
+      - name: Run dbt test
+        run: cd dbt && poetry run dbt test --target dev
+
   terraform-check:
     runs-on: ubuntu-latest
-    needs: python-sql-check
+    needs: [python-check, dbt-check]
     steps:
       - uses: actions/checkout@v4
       
