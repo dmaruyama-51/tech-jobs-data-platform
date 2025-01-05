@@ -1,0 +1,31 @@
+name: 'Setup Python and Poetry'
+description: 'Sets up Python and Poetry with caching'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Cache Poetry
+      uses: actions/cache@v4
+      with:
+        path: ~/.local
+        key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+    
+    - name: Install Poetry
+      if: steps.cache-poetry.outputs.cache-hit != 'true'
+      shell: bash
+      run: curl -sSL https://install.python-poetry.org | python3 -
+    
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+    
+    - name: Install dependencies
+      shell: bash
+      run: poetry install
