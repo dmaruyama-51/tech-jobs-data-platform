@@ -31,10 +31,10 @@ dbt-run-prod:
 	set -a && source .env.prod && set +a && $(DBT) run --target prod
 
 sql-lint:
-	${POETRY_RUN} sqlfluff lint dbt/models/
+	${POETRY_RUN} sqlfluff lint dbt/models/ --config dbt/.sqlfluff
 
 sql-fix:
-	${POETRY_RUN} sqlfluff fix dbt/models/
+	${POETRY_RUN} sqlfluff fix dbt/models/ --config dbt/.sqlfluff
 
 
 # ==============================
