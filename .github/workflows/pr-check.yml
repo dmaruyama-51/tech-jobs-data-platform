@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   pull-requests: write  # PRへのコメント権限を追加
+  id-token: write  # Workload Identity Federation用の権限を追加
 
 jobs:
   python-check:
