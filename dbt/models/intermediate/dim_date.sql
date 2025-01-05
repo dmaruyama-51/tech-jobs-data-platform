@@ -1,0 +1,1 @@
+{{ dbt_date.get_date_dimension("2024-10-01", "2025-12-31") }} -- noqa
