@@ -1,0 +1,161 @@
+version: 2
+
+models:
+  - name: fct_jobs
+    description: "求人情報のファクトテーブル"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - unique
+          - not_null
+      - name: listing_start_date
+        description: "掲載開始日"
+        tests:
+          - not_null
+      - name: monthly_salary
+        description: "月給"
+      - name: number_of_recruitment_interviews
+        description: "面談回数"
+      - name: number_of_days_worked
+        description: "稼働日数"
+      - name: number_of_applicants
+        description: "募集人数"
+
+  - name: dim_job_details
+    description: "求人詳細ディメンション"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('fct_jobs')
+              field: job_id
+      - name: detail_link
+        description: "求人詳細ページのURL"
+      - name: job_title
+        description: "求人タイトル"
+      - name: occupation
+        description: "職種"
+      - name: work_type
+        description: "雇用形態"
+      - name: work_location
+        description: "勤務地"
+      - name: industry
+        description: "業界"
+      - name: job_content
+        description: "案件内容"
+      - name: required_skills
+        description: "必須スキル"
+      - name: preferred_skills
+        description: "尚可スキル"
+
+  - name: dim_language
+    description: "プログラミング言語ディメンション"
+    columns:
+      - name: lang_id
+        description: "言語ID"
+        tests:
+          - unique
+          - not_null
+      - name: lang
+        description: "プログラミング言語名"
+        tests:
+          - not_null
+
+  - name: dim_tool
+    description: "環境・ツールディメンション"
+    columns:
+      - name: tool_id
+        description: "環境・ツールID"
+        tests:
+          - unique
+          - not_null
+      - name: tool
+        description: "環境・ツール名"
+        tests:
+          - not_null
+
+  - name: dim_framework
+    description: "フレームワーク・ライブラリディメンション"
+    columns:
+      - name: framework_id
+        description: "フレームワーク・ライブラリID"
+        tests:
+          - unique
+          - not_null
+      - name: framework
+        description: "フレームワーク・ライブラリ名"
+        tests:
+          - not_null
+
+  - name: bridge_language
+    description: "求人-言語ブリッジテーブル"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_jobs')
+              field: job_id
+      - name: lang_id
+        description: "言語ID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_language')
+              field: lang_id
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - job_id
+            - lang_id
+
+  - name: bridge_tool
+    description: "求人-ツールブリッジテーブル"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_jobs')
+              field: job_id
+      - name: tool_id
+        description: "ツールID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_tool')
+              field: tool_id
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - job_id
+            - tool_id
+
+  - name: bridge_framework
+    description: "求人-フレームワークブリッジテーブル"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_jobs')
+              field: job_id
+      - name: framework_id
+        description: "フレームワークID"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_framework')
+              field: framework_id
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - job_id
+            - framework_id

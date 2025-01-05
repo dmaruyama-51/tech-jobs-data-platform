@@ -30,6 +30,12 @@ dbt-run-dev:
 dbt-run-prod:
 	set -a && source .env.prod && set +a && $(DBT) run --target prod
 
+dbt-test-dev:
+	set -a && source .env.dev && set +a && $(DBT) test --target dev
+
+dbt-test-prod:
+	set -a && source .env.prod && set +a && $(DBT) test --target prod
+
 sql-lint:
 	${POETRY_RUN} sqlfluff lint dbt/models/ --config dbt/.sqlfluff
 
