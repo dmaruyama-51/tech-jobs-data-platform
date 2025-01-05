@@ -58,8 +58,7 @@ jobs:
         run: cd dbt && poetry run dbt deps
 
       - name: Run dbt test
-        shell: bash
-        run: make dbt-test-dev
+        run: cd dbt && poetry run dbt test --target dev
 
       - name: Run pytest
         run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
