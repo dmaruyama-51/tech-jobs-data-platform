@@ -65,7 +65,7 @@ jobs:
                 job_retries: 1
                 location: asia-northeast1
                 method: oauth
-                project: \${PROJECT_ID}
+                project: $PROJECT_ID
                 threads: 1
                 type: bigquery
           EOF
