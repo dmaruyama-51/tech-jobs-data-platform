@@ -17,24 +17,29 @@ jobs:
       PROJECT_ID: ${{ secrets.DEV_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-python-poetry
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          
-      - name: Install dependencies
-        run: poetry install
-        
       - name: Run lint and format
         run: |
           make lint
           make format
-          make sql-lint
+
+      - name: Run pytest
+        run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
+
+    dbt-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/setup-python-poetry
 
       - name: Setup dbt
         run: |
@@ -53,6 +58,9 @@ jobs:
                 threads: 1
                 type: bigquery
           EOF
+      
+      - name: Run lint and format
+        run: make sql-lint
 
       - name: Install dbt packages
         run: cd dbt && poetry run dbt deps
@@ -60,18 +68,9 @@ jobs:
       - name: Run dbt test
         run: cd dbt && poetry run dbt test --target dev
 
-      - name: Run pytest
-        run: poetry run pytest --cov=functions --cov-report=term-missing --junitxml=pytest.xml tests/ | tee pytest-coverage.txt
-
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
-        with:
-          pytest-coverage-path: ./pytest-coverage.txt
-          junitxml-path: ./pytest.xml
-
   terraform-check:
     runs-on: ubuntu-latest
-    needs: python-sql-check
+    needs: [python-sql-check, dbt-check]
     steps:
       - uses: actions/checkout@v4
       
