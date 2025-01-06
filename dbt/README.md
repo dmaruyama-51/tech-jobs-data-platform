@@ -73,7 +73,7 @@ erDiagram
   - Numeric data type conversion
   - job_id generation (MD5 hash of detail_link)
 
-### Intermediate Layer
+### Mart Layer
 #### Fact Tables
 - **fct_jobs**: Quantitative information about job listings
 

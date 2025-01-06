@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["dmaruyama-51 <0501awasuram@gmail.com>"]
 readme = "README.md"
+package-mode = false  # パッケージモードを無効化
 
 [tool.poetry.dependencies]
 python = "^3.11"
