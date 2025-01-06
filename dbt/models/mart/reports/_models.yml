@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: bi__job_analysis
+    description: "求人分析用のBIテーブル"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - unique
+          - not_null
+      - name: monthly_salary
+        description: "月給"
+      - name: number_of_recruitment_interviews
+        description: "面談回数"
+      - name: number_of_days_worked
+        description: "稼働日数"
+      - name: number_of_applicants
+        description: "募集人数"
+      - name: job_title
+        description: "求人タイトル"
+      - name: detail_link
+        description: "求人詳細ページのURL"
+      - name: occupation
+        description: "職種"
+      - name: work_type
+        description: "雇用形態"
+      - name: work_location
+        description: "勤務地"
+      - name: industry
+        description: "業界"
+      - name: job_content
+        description: "案件内容"
+      - name: required_skills
+        description: "必須スキル"
+      - name: preferred_skills
+        description: "尚可スキル"
+      - name: listing_start_date
+        description: "掲載開始日"
+      - name: listing_day_of_week
+        description: "掲載開始曜日"
+      - name: listing_week
+        description: "掲載開始週"
+      - name: listing_month
+        description: "掲載開始月"
+      - name: listing_quarter
+        description: "掲載開始四半期"
+      - name: listing_year
+        description: "掲載開始年"
+
+  - name: bi__job_analysis_detail
+    description: "求人分析用のより粒度の細かいBIテーブル（言語・ツール・フレームワーク情報を含み, job_idユニークではない）"
+    columns:
+      - name: job_id
+        description: "求人ID"
+        tests:
+          - not_null
+      - name: lang_id
+        description: "言語ID"
+      - name: tool_id
+        description: "ツールID"
+      - name: framework_id
+        description: "フレームワークID"
+      - name: monthly_salary
+        description: "月給"
+      - name: number_of_recruitment_interviews
+        description: "面談回数"
+      - name: number_of_days_worked
+        description: "稼働日数"
+      - name: number_of_applicants
+        description: "募集人数"
+      - name: job_title
+        description: "求人タイトル"
+      - name: detail_link
+        description: "求人詳細ページのURL"
+      - name: occupation
+        description: "職種"
+      - name: work_type
+        description: "雇用形態"
+      - name: work_location
+        description: "勤務地"
+      - name: industry
+        description: "業界"
+      - name: job_content
+        description: "案件内容"
+      - name: required_skills
+        description: "必須スキル"
+      - name: preferred_skills
+        description: "尚可スキル"
+      - name: listing_start_date
+        description: "掲載開始日"
+      - name: listing_day_of_week
+        description: "掲載開始曜日"
+      - name: listing_week
+        description: "掲載開始週"
+      - name: listing_month
+        description: "掲載開始月"
+      - name: listing_quarter
+        description: "掲載開始四半期"
+      - name: listing_year
+        description: "掲載開始年"
+      - name: lang
+        description: "プログラミング言語名"
+      - name: tool
+        description: "環境・ツール名"
+      - name: framework
+        description: "フレームワーク・ライブラリ名"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - job_id
+            - lang_id
+            - tool_id
+            - framework_id
