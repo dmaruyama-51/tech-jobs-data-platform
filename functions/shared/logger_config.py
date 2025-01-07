@@ -1,3 +1,4 @@
+import google.cloud.logging
 import logging
 from logging.handlers import RotatingFileHandler
 import os
@@ -5,6 +6,11 @@ import os
 
 def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
     """ロガーの設定を行う"""
+
+    # Google Cloud Loggingの設定
+    client = google.cloud.logging.Client()
+    client.setup_logging()
+
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
