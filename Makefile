@@ -10,7 +10,7 @@ MYPY_OPTIONS = --install-types --non-interactive --ignore-missing-imports
 
 lint: 
 	${POETRY_RUN} mypy ${MYPY_OPTIONS} -p functions
-	${POETRY_RUN} ruff check . --fix
+	${POETRY_RUN} ruff check . --extend-select I --fix
 
 format: 
 	${POETRY_RUN} ruff format .

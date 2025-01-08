@@ -1,6 +1,6 @@
-import pytest
 import pandas as pd
-from func_scraper.utils.scraper import JobListScraper, JobDetailScraper
+import pytest
+from func_scraper.utils.scraper import JobDetailScraper, JobListScraper
 
 
 @pytest.fixture

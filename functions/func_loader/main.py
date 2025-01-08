@@ -1,13 +1,17 @@
-import functions_framework
-from flask import jsonify
-from google.cloud import bigquery, storage  # type: ignore
 import os
-from dotenv import load_dotenv
-from shared.logger_config import setup_logger
-from functions.shared.gcs_utils import get_data_bucket_name
-from shared.date_utils import get_yesterday_jst
 from pathlib import Path
+from typing import Any, Dict, Tuple
+
+import functions_framework
+from dotenv import load_dotenv
+from flask import Request, jsonify
+from flask.wrappers import Response
+from google.cloud import bigquery, storage  # type: ignore
+from shared.date_utils import get_yesterday_jst
+from shared.logger_config import setup_logger
+
 from functions.shared.bigquery_utils import ensure_dataset_exists, ensure_table_exists
+from functions.shared.gcs_utils import get_data_bucket_name
 
 load_dotenv()
 
@@ -15,7 +19,7 @@ load_dotenv()
 class JobDataLoader:
     """スクレイピングデータをBigQueryへロードする"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = setup_logger("job_loader")
         self.project_id = os.environ.get("PROJECT_ID")
         if not self.project_id:
@@ -80,7 +84,7 @@ class JobDataLoader:
         self.logger.info(f"Loaded {load_job.output_rows} rows to temporary table")
         return load_job.output_rows
 
-    def _merge_data(self, temp_table: str):
+    def _merge_data(self, temp_table: str) -> None:
         """データのマージ処理"""
         self.logger.info("Executing merge operation...")
         merge_query = self._read_sql_file("merge.sql").format(
@@ -90,7 +94,7 @@ class JobDataLoader:
         merge_job.result()
         self.logger.info("Merge operation completed")
 
-    def execute(self) -> dict:
+    def execute(self) -> Dict[str, Any]:
         """ロード処理を実行"""
         try:
             self.logger.info("Starting data load process...")
@@ -165,11 +169,11 @@ class JobDataLoader:
 
 
 @functions_framework.http
-def load_to_bigquery(request):
+def load_to_bigquery(request: Request) -> Tuple[Response, int]:
     """Cloud Functions のエントリーポイント"""
     try:
         loader = JobDataLoader()
         result = loader.execute()
-        return jsonify(result)
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

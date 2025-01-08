@@ -1,7 +1,8 @@
-import google.cloud.logging
 import logging
-from logging.handlers import RotatingFileHandler
 import os
+from logging.handlers import RotatingFileHandler
+
+import google.cloud.logging
 
 
 def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
