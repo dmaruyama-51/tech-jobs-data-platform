@@ -1,5 +1,5 @@
-import pytest
 import pandas as pd
+import pytest
 from func_scraper.main import JobScrapingService
 
 

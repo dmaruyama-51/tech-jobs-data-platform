@@ -1,18 +1,25 @@
-import functions_framework
-from flask import jsonify
-import pandas as pd
-from utils.scraper import JobListScraper, JobDetailScraper
-from utils.parsers import JobDataParser
-from utils.http_client import HttpClient
-from shared.logger_config import setup_logger
-from shared.gcs import save_to_gcs, get_data_bucket_name
-from shared.date_utils import get_yesterday_jst
-from dotenv import load_dotenv
 import os
+from datetime import datetime
+from typing import Tuple
+
+import functions_framework
+import pandas as pd
+from dotenv import load_dotenv
+from flask import Request, jsonify
+from flask.wrappers import Response
+from shared.date_utils import get_yesterday_jst
+from shared.gcs_utils import get_data_bucket_name, save_to_gcs
+from shared.logger_config import setup_logger
+from shared.pubsub_utils import MessageProcessor, is_valid_pubsub_message
+from utils.http_client import HttpClient
+from utils.parsers import JobDataParser
+from utils.scraper import JobDetailScraper, JobListScraper
 
 # 環境変数でエンコーディングを設定
 os.environ["PYTHONIOENCODING"] = "utf-8"
 os.environ["LANG"] = "ja_JP.UTF-8"
+
+logger = setup_logger("job_scraper_main")
 
 load_dotenv()
 
@@ -70,25 +77,77 @@ class JobScrapingService:
 
 
 @functions_framework.http
-def scraping(request):
+def scraping(request: Request) -> Tuple[Response, int]:
     """Cloud Functions のエントリーポイント"""
     try:
+        # Pub/Subメッセージの検証
+        if not is_valid_pubsub_message(request):
+            # 不正なメッセージの場合は200を返して処理を終了
+            # ref) https://stackoverflow.com/questions/76669801/avoid-infinite-pubsub-loop-when-cloud-run-returns-an-error
+            return jsonify(
+                {"status": "invalid", "message": "Invalid Pub/Sub message format"}
+            ), 200
+
+        # ==============================================
+        # 無限ループを防ぐため, message_idが処理済みかチェック
+        # ==============================================
+
+        # メッセージIDの取得
+        message = request.get_json()["message"]
+        message_id = message.get("messageId")
+
+        # MessageProcessorの初期化
+        bucket_name = get_data_bucket_name()
+        processor = MessageProcessor(bucket_name)
+
+        # べき等性チェック
+        if processor.is_message_processed(message_id):
+            logger.info(f"Message {message_id} has already been processed. Skipping.")
+            return jsonify(
+                {"status": "skipped", "message": "Message already processed"}
+            ), 200
+
+        # ==============================================
+        # スクレイピング実行
+        # ==============================================
+
         # 昨日の日付を使用
         limit_date = get_yesterday_jst().strftime("%Y-%m-%d")
 
-        service = JobScrapingService(limit_date)
-        final_df = service.execute()
+        try:
+            service = JobScrapingService(limit_date)
+            final_df = service.execute()
 
-        bucket_name = get_data_bucket_name()
-        saved_path = save_to_gcs(final_df, bucket_name)
+            bucket_name = get_data_bucket_name()
+            saved_path = save_to_gcs(final_df, bucket_name)
 
-        return jsonify(
-            {
-                "status": "success",
-                "message": f"Data saved to gs://{bucket_name}/{saved_path}",
-                "record_count": len(final_df),
-                "limit_date": limit_date,
-            }
-        )
+            # 処理成功時にメッセージを処理済みとしてマーク
+            processor.mark_message_as_processed(
+                message_id,
+                {
+                    "limit_date": limit_date,
+                    "record_count": len(final_df),
+                    "saved_path": saved_path,
+                    "processed_at": datetime.utcnow().isoformat(),
+                },
+            )
+
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": f"Data saved to gs://{bucket_name}/{saved_path}",
+                    "record_count": len(final_df),
+                    "limit_date": limit_date,
+                }
+            ), 200
+
+        except Exception as e:
+            # 処理中のエラーでも200を返してPub/Subの再試行を防ぐ
+            logger.error(f"Error during scraping: {str(e)}")
+            return jsonify({"status": "error", "message": str(e)}), 200
+
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.error(f"Critical error: {str(e)}")
+        return jsonify(
+            {"status": "critical_error", "message": str(e)}
+        ), 200  # すべてのケースで200を返す

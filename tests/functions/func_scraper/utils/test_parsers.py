@@ -1,6 +1,6 @@
+import pandas as pd
 import pytest
 from func_scraper.utils.parsers import JobDataParser
-import pandas as pd
 
 
 @pytest.fixture
