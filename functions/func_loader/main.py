@@ -4,10 +4,10 @@ from google.cloud import bigquery, storage  # type: ignore
 import os
 from dotenv import load_dotenv
 from shared.logger_config import setup_logger
-from shared.gcs import get_data_bucket_name
+from functions.shared.gcs_utils import get_data_bucket_name
 from shared.date_utils import get_yesterday_jst
 from pathlib import Path
-from shared.bigquery import ensure_dataset_exists, ensure_table_exists
+from functions.shared.bigquery_utils import ensure_dataset_exists, ensure_table_exists
 
 load_dotenv()
 

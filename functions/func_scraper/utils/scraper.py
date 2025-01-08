@@ -2,7 +2,7 @@ import pandas as pd
 from utils.parsers import JobDataParser
 from utils.http_client import HttpClient
 import time
-
+from shared.logger_config import setup_logger
 
 class JobListScraper:
     """求人一覧ページのスクレイピング"""
@@ -10,6 +10,7 @@ class JobListScraper:
     def __init__(self, http_client: HttpClient, parser: JobDataParser):
         self.http_client = http_client
         self.parser = parser
+        self.logger = setup_logger("job_list_scraper")
 
     def scrape_all_pages(
         self, scrape_limit_date: pd.Timestamp, sleep_time: int = 5
@@ -18,13 +19,23 @@ class JobListScraper:
         job_df_list = []
         for page_num in range(1, 100):
             list_df = self.scrape_page(page_num)
-            job_df_list.append(list_df)
 
-            if list_df.listing_start_date.min() < scrape_limit_date:
+            # 求人が見つからない場合は終了
+            if len(list_df) == 0:
                 break
-            else:
-                print(f"page {page_num} is not less than {scrape_limit_date}")
-                time.sleep(sleep_time)  # ページ間のスリープ
+            
+            # 最も古い求人が制限日より古い場合は終了
+            if list_df.listing_start_date.min() < scrape_limit_date:
+                self.logger.info(f"Found old data on page {page_num}, stopping...")
+                break
+            
+            # 条件を満たすデータのみを追加
+            job_df_list.append(list_df)
+            self.logger.info(f"Added data from page {page_num}")
+            time.sleep(sleep_time)
+        
+        if not job_df_list:
+            return pd.DataFrame()
 
         return pd.concat(job_df_list).query("listing_start_date >= @scrape_limit_date")
 
