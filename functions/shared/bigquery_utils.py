@@ -1,10 +1,11 @@
 from google.cloud import bigquery
+
 from shared.logger_config import setup_logger
 
 logger = setup_logger("shared.bigquery_utils")
 
 
-def ensure_dataset_exists(client: bigquery.Client, dataset_ref: str):
+def ensure_dataset_exists(client: bigquery.Client, dataset_ref: str) -> None:
     """データセットの存在確認と作成"""
     try:
         client.get_dataset(dataset_ref)
@@ -16,7 +17,7 @@ def ensure_dataset_exists(client: bigquery.Client, dataset_ref: str):
         logger.info(f"Created dataset: {dataset_ref}")
 
 
-def ensure_table_exists(client: bigquery.Client, table_ref: str, schema: list):
+def ensure_table_exists(client: bigquery.Client, table_ref: str, schema: list) -> None:
     """テーブルの存在確認と作成"""
     try:
         client.get_table(table_ref)

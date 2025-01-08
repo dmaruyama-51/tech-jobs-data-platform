@@ -1,6 +1,6 @@
 import pytest
 from google.cloud import bigquery
-from shared.bigquery import ensure_dataset_exists, ensure_table_exists
+from shared.bigquery_utils import ensure_dataset_exists, ensure_table_exists
 
 
 @pytest.fixture

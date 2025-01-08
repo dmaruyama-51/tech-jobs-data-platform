@@ -1,4 +1,4 @@
-from func_scraper.utils.models import JobListData, JobBasicData, JobTableData
+from func_scraper.utils.models import JobBasicData, JobListData, JobTableData
 
 
 def test_job_list_data_creation():

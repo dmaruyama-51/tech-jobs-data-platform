@@ -1,15 +1,16 @@
-from bs4 import BeautifulSoup
-from utils.models import JobTableData, JobBasicData, JobListData
+from typing import Dict, List
+
 import pandas as pd
-from typing import List, Dict
 import requests
+from bs4 import BeautifulSoup
 from shared.logger_config import setup_logger
+from utils.models import JobBasicData, JobListData, JobTableData
 
 
 class JobDataParser:
     """HTMLパーサー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = setup_logger("job_parser")
 
     def parse_list_page(self, html_content: requests.Response) -> pd.DataFrame:

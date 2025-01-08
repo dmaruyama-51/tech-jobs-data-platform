@@ -1,13 +1,14 @@
-import pytest
-import pandas as pd
 from datetime import datetime
-from shared.gcs import get_data_bucket_name, save_to_gcs
+
+import pandas as pd
+import pytest
+from shared.gcs_utils import get_data_bucket_name, save_to_gcs
 
 
 @pytest.fixture
 def mock_storage_client(mocker):
     """GCSクライアントのモックを提供するフィクスチャ"""
-    return mocker.patch("shared.gcs.storage.Client")
+    return mocker.patch("shared.gcs_utils.storage.Client")
 
 
 @pytest.fixture
@@ -62,8 +63,8 @@ def test_save_to_gcs(mock_storage_client, sample_dataframe, mocker):
 
     # 日付を固定
     current_date = datetime(2024, 3, 15)
-    mocker.patch("shared.gcs.datetime")
-    mocker.patch("shared.gcs.datetime.now", return_value=current_date)
+    mocker.patch("shared.gcs_utils.datetime")
+    mocker.patch("shared.gcs_utils.datetime.now", return_value=current_date)
 
     # テスト実行
     bucket_name = "test-bucket"
