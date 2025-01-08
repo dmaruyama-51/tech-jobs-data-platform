@@ -26,14 +26,14 @@ class JobListScraper:
             if len(list_df) == 0:
                 break
 
+            job_df_list.append(list_df)
+            self.logger.info(f"Added data from page {page_num}")
+
             # 最も古い求人が制限日より古い場合は終了
             if list_df.listing_start_date.min() < scrape_limit_date:
                 self.logger.info(f"Found old data on page {page_num}, stopping...")
                 break
 
-            # 条件を満たすデータのみを追加
-            job_df_list.append(list_df)
-            self.logger.info(f"Added data from page {page_num}")
             time.sleep(sleep_time)
 
         if not job_df_list:

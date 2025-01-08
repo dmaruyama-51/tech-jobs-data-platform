@@ -7,11 +7,10 @@ from dotenv import load_dotenv
 from flask import Request, jsonify
 from flask.wrappers import Response
 from google.cloud import bigquery, storage  # type: ignore
+from shared.bigquery_utils import ensure_dataset_exists, ensure_table_exists
 from shared.date_utils import get_yesterday_jst
+from shared.gcs_utils import get_data_bucket_name
 from shared.logger_config import setup_logger
-
-from functions.shared.bigquery_utils import ensure_dataset_exists, ensure_table_exists
-from functions.shared.gcs_utils import get_data_bucket_name
 
 load_dotenv()
 

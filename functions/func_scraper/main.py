@@ -8,13 +8,12 @@ from dotenv import load_dotenv
 from flask import Request, jsonify
 from flask.wrappers import Response
 from shared.date_utils import get_yesterday_jst
+from shared.gcs_utils import get_data_bucket_name, save_to_gcs
 from shared.logger_config import setup_logger
 from shared.pubsub_utils import MessageProcessor, is_valid_pubsub_message
 from utils.http_client import HttpClient
 from utils.parsers import JobDataParser
 from utils.scraper import JobDetailScraper, JobListScraper
-
-from functions.shared.gcs_utils import get_data_bucket_name, save_to_gcs
 
 # 環境変数でエンコーディングを設定
 os.environ["PYTHONIOENCODING"] = "utf-8"
