@@ -1,0 +1,59 @@
+name: Daily dbt Run
+
+on:
+  schedule:
+    # 毎日午前8時(JST)に実行 (UTC 23:00)
+    - cron: '0 23 * * *'
+  push:
+    branches: [ feature/#33 ]
+    
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write  # Workload Identity Federation用の権限
+
+jobs:
+  dbt-run:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ secrets.PROD_PROJECT_ID }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER_PROD }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_PROD }}
+          
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - uses: ./.github/actions/setup-python-poetry
+
+      - name: Setup dbt
+        run: |
+          mkdir -p ~/.dbt
+          cat << EOF > ~/.dbt/profiles.yml
+          dbt_project:
+            target: prod
+            outputs:
+              prod:
+                dataset: bigdata_navi
+                job_execution_timeout_seconds: 300
+                job_retries: 1
+                location: asia-northeast1
+                method: oauth
+                project: $PROJECT_ID
+                threads: 1
+                type: bigquery
+          EOF
+      
+      - name: Install dbt packages
+        run: cd dbt && poetry run dbt deps
+      
+      - name: Run dbt
+        run: cd dbt && poetry run dbt build --target prod
