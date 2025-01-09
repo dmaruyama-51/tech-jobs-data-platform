@@ -31,12 +31,14 @@ jobs:
       - name: Create Terraform configs
         run: |
           mkdir -p ./terraform/env
-          echo "${{ secrets.TERRAFORM_BACKEND_PROD }}" > ./terraform/env/backend-prod.hcl
           echo "${{ secrets.TERRAFORM_VARS_PROD }}" > ./terraform/env/prod.tfvars
       
       - name: Terraform Init
         working-directory: ./terraform
-        run: terraform init -reconfigure -backend-config=env/backend-prod.hcl
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=terraform/state"
       
       - name: Terraform Plan
         working-directory: ./terraform
