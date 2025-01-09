@@ -28,11 +28,6 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
       
-      - name: Configure gcloud CLI
-        run: |
-          gcloud config set project ${{ secrets.PROD_PROJECT_ID }}
-          gcloud auth application-default set-quota-project ${{ secrets.PROD_PROJECT_ID }}
-      
       - name: Create Terraform configs
         run: |
           mkdir -p ./terraform/env
