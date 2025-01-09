@@ -1,0 +1,52 @@
+name: Terraform Apply to Production
+
+on:
+  push:
+    branches: [ main, feature/#27 ]
+
+permissions:
+  contents: read
+  id-token: write  # Workload Identity Federation用の権限
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER_PROD }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_PROD }}
+          
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - name: Configure gcloud CLI
+        run: |
+          gcloud config set project ${{ secrets.PROD_PROJECT_ID }}
+          gcloud auth application-default set-quota-project ${{ secrets.PROD_PROJECT_ID }}
+      
+      - name: Create Terraform configs
+        run: |
+          mkdir -p ./terraform/env
+          echo "${{ secrets.TERRAFORM_BACKEND_PROD }}" > ./terraform/env/backend-prod.hcl
+          echo "${{ secrets.TERRAFORM_VARS_PROD }}" > ./terraform/env/prod.tfvars
+      
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init -reconfigure -backend-config=env/backend-prod.hcl
+      
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: terraform plan -var-file=env/prod.tfvars
+      
+      - name: Terraform Apply
+        working-directory: ./terraform
+        run: terraform apply -var-file=env/prod.tfvars -auto-approve 
