@@ -28,11 +28,6 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
       
-      - name: Create Terraform configs
-        run: |
-          mkdir -p ./terraform/env
-          echo "${{ secrets.TERRAFORM_VARS_PROD }}" > ./terraform/env/prod.tfvars
-      
       - name: Terraform Init
         working-directory: ./terraform
         run: |
@@ -43,13 +38,13 @@ jobs:
       - name: Terraform Plan
         working-directory: ./terraform
         run: |
-          # 既存のロックを強制的に解除
-          terraform force-unlock -force 1736415052588290
-          
-          # planの実行（ロックを無効化）
-          terraform plan -lock=false -var-file=env/prod.tfvars
+          terraform plan -lock=false \
+            -var="project_id=${{ env.PROJECT_ID_PROD }}" \
+            -var="region=${{ env.REGION }}"
       
       - name: Terraform Apply
         working-directory: ./terraform
         run: |
-          terraform apply -lock=false -var-file=env/prod.tfvars -auto-approve 
+          terraform apply -lock=false \
+            -var="project_id=${{ env.PROJECT_ID_PROD }}" \
+            -var="region=${{ env.REGION }}"
