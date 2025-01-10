@@ -56,6 +56,8 @@ resource "google_project_iam_member" "terraform_service_account_roles" {
     # Cloud Storage
     "roles/storage.objectViewer",
     "roles/storage.objectCreator",
+    "roles/storage.buckets.get",
+    "roles/storage.buckets.create",
     
     # Cloud Functions
     "roles/cloudfunctions.developer",
@@ -66,6 +68,9 @@ resource "google_project_iam_member" "terraform_service_account_roles" {
     # Pub/Sub
     "roles/pubsub.publisher",
     "roles/pubsub.subscriber",
+    
+    # Cloud Scheduler
+    "roles/cloudscheduler.admin",
     
     # IAM
     "roles/iam.serviceAccountUser",
