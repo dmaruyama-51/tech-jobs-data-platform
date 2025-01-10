@@ -54,16 +54,14 @@ module "func_loader" {
 resource "google_project_iam_member" "terraform_service_account_roles" {
   for_each = toset([
     # Cloud Storage
-    "roles/storage.objectViewer",
-    "roles/storage.objectCreator",
-    "roles/storage.buckets.get",
-    "roles/storage.buckets.create",
+    "roles/storage.admin",
     
     # Cloud Functions
     "roles/cloudfunctions.developer",
     
     # Cloud Run (Cloud Functions 2nd gen)
     "roles/run.developer",
+    "roles/run.invoker",
     
     # Pub/Sub
     "roles/pubsub.publisher",
