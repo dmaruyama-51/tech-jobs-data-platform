@@ -55,6 +55,7 @@ resource "google_project_iam_member" "terraform_service_account_roles" {
   for_each = toset([
     # Cloud Storage
     "roles/storage.admin",
+    "roles/storage.objectViewer"
     
     # Cloud Functions
     "roles/cloudfunctions.developer",
@@ -69,10 +70,13 @@ resource "google_project_iam_member" "terraform_service_account_roles" {
     
     # Cloud Scheduler
     "roles/cloudscheduler.admin",
+    "roles/cloudscheduler.jobRunner",
+    "roles/cloudscheduler.viewer",
     
     # IAM
     "roles/iam.serviceAccountUser",
     "roles/resourcemanager.projectIamAdmin"
+    "roles/iam.roleViewer",
   ])
 
   project = var.project_id
