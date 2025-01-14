@@ -40,8 +40,7 @@ jobs:
         run: |
           terraform plan -lock=false \
             -var="project_id=${PROJECT_ID_PROD}" \
-            -var="region=${REGION}" \
-            -var="terraform_service_account=${{ secrets.SERVICE_ACCOUNT_PROD }}"
+            -var="region=${REGION}"
       
       - name: Terraform Apply
         working-directory: ./terraform
