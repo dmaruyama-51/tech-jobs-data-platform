@@ -49,37 +49,3 @@ module "func_loader" {
   entry_point   = "load_to_bigquery"
   data_bucket   = "${var.project_id}-scraping-data"
 } 
-
-# GithubActionsで実行するサービスアカウントへの権限付与
-resource "google_project_iam_member" "terraform_service_account_roles" {
-  for_each = toset([
-    # Cloud Storage
-    "roles/storage.admin",
-    "roles/storage.objectViewer"
-    
-    # Cloud Functions
-    "roles/cloudfunctions.developer",
-    
-    # Cloud Run (Cloud Functions 2nd gen)
-    "roles/run.developer",
-    "roles/run.invoker",
-    
-    # Pub/Sub
-    "roles/pubsub.publisher",
-    "roles/pubsub.subscriber",
-    
-    # Cloud Scheduler
-    "roles/cloudscheduler.admin",
-    "roles/cloudscheduler.jobRunner",
-    "roles/cloudscheduler.viewer",
-    
-    # IAM
-    "roles/iam.serviceAccountUser",
-    "roles/resourcemanager.projectIamAdmin"
-    "roles/iam.roleViewer",
-  ])
-
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${var.terraform_service_account}"
-} 
