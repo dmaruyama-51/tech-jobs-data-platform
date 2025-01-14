@@ -36,7 +36,7 @@ jobs:
   dbt-check:
     runs-on: ubuntu-latest
     env:
-      PROJECT_ID: ${{ env.PROJECT_ID_DEV }}
+      PROJECT_ID: ${{ vars.PROJECT_ID_DEV }}
     steps:
       - uses: actions/checkout@v4
       
