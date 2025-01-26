@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 from google.cloud import storage  # type: ignore
@@ -23,7 +23,7 @@ def save_to_gcs(df: pd.DataFrame, bucket_name: str, prefix: str = "raw/jobs") ->
     bucket = client.bucket(bucket_name)
 
     # 日付のみのパーティションフォルダを使用
-    partition_date = datetime.now().strftime("%Y%m%d")
+    partition_date = datetime.now(tz=timezone(timedelta(hours=9))).strftime("%Y%m%d")
     blob_name = f"{prefix}/partition_date={partition_date}/jobs.csv"
 
     # 保存前に同じ日の古いファイルを削除
