@@ -7,7 +7,7 @@ def test_get_with_absolute_url(mocker):
     """絶対URLでのGETリクエストをテスト"""
     # google-cloud-logging の初期化をモック化
     mocker.patch("google.cloud.logging.Client")
-    
+
     mock_response = mocker.Mock()
     mock_response.encoding = None
     mock_get = mocker.patch("requests.get", return_value=mock_response)
@@ -24,7 +24,7 @@ def test_get_with_relative_url(mocker):
     """相対URLでのGETリクエストをテスト"""
     # google-cloud-logging の初期化をモック化
     mocker.patch("google.cloud.logging.Client")
-    
+
     mock_response = mocker.Mock()
     mock_response.encoding = None
     mock_get = mocker.patch("requests.get", return_value=mock_response)
