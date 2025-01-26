@@ -71,3 +71,11 @@ jobs:
       - name: Generate elementary report
         run: |
           cd dbt && poetry run edr report
+
+      - name: Commit elementary report
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add dbt/elementary/edr_target/*
+          git commit -m "Update Elementary report [skip ci]" || echo "No changes to commit"
+          git push
