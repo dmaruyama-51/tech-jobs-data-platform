@@ -55,3 +55,9 @@ jobs:
       
       - name: Run dbt
         run: cd dbt && poetry run dbt build --target prod
+
+      - name: Generate elementary report
+        run: |
+          cd dbt
+          poetry run dbt build --select elementary --target prod
+          poetry run edr report
