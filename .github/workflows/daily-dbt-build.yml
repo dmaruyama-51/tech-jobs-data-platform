@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write  # Workload Identity Federation用の権限
 
 jobs:
@@ -48,6 +48,18 @@ jobs:
                 project: $PROJECT_ID
                 threads: 1
                 type: bigquery
+          elementary:
+            target: prod
+            outputs:
+              prod:
+                dataset: bigdata_navi_elementary
+                job_execution_timeout_seconds: 300
+                job_retries: 1
+                location: asia-northeast1
+                method: oauth
+                project: $PROJECT_ID
+                threads: 1
+                type: bigquery
           EOF
       
       - name: Install dbt packages
@@ -55,3 +67,18 @@ jobs:
       
       - name: Run dbt
         run: cd dbt && poetry run dbt build --target prod
+
+      - name: Generate elementary report
+        run: |
+          cd dbt && poetry run edr report
+          mv edr_target/elementary_output.json ../docs
+          mv edr_target/elementary_report.html ../docs/index.html
+
+      - name: Commit elementary report
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add docs/elementary_output.json
+          git add docs/index.html
+          git commit -m "Update Elementary report in docs [skip ci]" || echo "No changes to commit"
+          git push

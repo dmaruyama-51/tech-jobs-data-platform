@@ -43,6 +43,12 @@ sql-fix:
 	${POETRY_RUN} sqlfluff fix dbt/models/ --config dbt/.sqlfluff
 
 
+dbt-elementary-dev:
+	set -a && source .env.dev && set +a && $(DBT) build --select elementary --target dev && edr report
+
+dbt-elementary-prod:
+	set -a && source .env.prod && set +a && $(DBT) build --select elementary --target prod && edr report
+
 # ==============================
 # Terraform
 # ==============================
@@ -111,5 +117,6 @@ run-scraper:
 
 run-loader:
 	PYTHONPATH=functions ${POETRY_RUN} functions_framework --target load_to_bigquery --source functions/func_loader/main.py --port 8080
+
 
 .PHONY: lint format tf-init-dev tf-init-prod tf-plan-dev tf-plan-prod tf-apply-dev tf-apply-prod tf-destroy-dev tf-destroy-prod tf-check all-check

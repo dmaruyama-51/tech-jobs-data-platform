@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 import pytest
@@ -44,7 +44,7 @@ def test_get_data_bucket_name(mock_env_vars, mocker):
 def test_save_to_gcs(mock_storage_client, sample_dataframe, mocker):
     """GCSへのデータ保存をテスト
     検証内容:
-    1. 正しいパスでファイルが保存されること
+    1. 正しいパスでファイルが保存されること（JSTタイムゾーンを考慮）
     2. 同じ日付の古いファイルが削除されること
     3. DataFrameが正しくCSVとして保存されること
     """
@@ -53,16 +53,15 @@ def test_save_to_gcs(mock_storage_client, sample_dataframe, mocker):
     mock_blob = mocker.Mock()
     mock_storage_client.return_value.bucket.return_value = mock_bucket
     mock_bucket.blob.return_value = mock_blob
-
-    # MagicMockを使用してファイル操作をモック化
     mock_blob.open.return_value = mocker.MagicMock()
 
     # 既存ブロブのモック
     existing_blob = mocker.Mock()
     mock_bucket.list_blobs.return_value = [existing_blob]
 
-    # 日付を固定
-    current_date = datetime(2024, 3, 15)
+    # JSTタイムゾーンを考慮した日付を固定
+    jst = timezone(timedelta(hours=9))
+    current_date = datetime(2024, 3, 15, tzinfo=jst)
     mocker.patch("shared.gcs_utils.datetime")
     mocker.patch("shared.gcs_utils.datetime.now", return_value=current_date)
 
