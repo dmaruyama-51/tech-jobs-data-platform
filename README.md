@@ -15,6 +15,9 @@ tech-jobs-data-platform is a data infrastructure system for analyzing technology
   - Modular SQL development
   - Data documentation
   - Data quality testing
+  - Data quality monitoring with Elementary
+    - The dashboard is available at:
+    - https://dmaruyama-51.github.io/tech-jobs-data-platform/#/report/dashboard
 
 ### Cloud Services (GCP)
 - **Cloud Run Functions (2nd gen)**
