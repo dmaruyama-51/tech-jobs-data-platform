@@ -36,6 +36,12 @@ dbt-test-dev:
 dbt-test-prod:
 	set -a && source .env.prod && set +a && $(DBT) test --target prod
 
+dbt-freshness-dev:
+	set -a && source .env.dev && set +a && $(DBT) source freshness --target dev
+
+dbt-freshness-prod:
+	set -a && source .env.prod && set +a && $(DBT) source freshness --target prod
+
 sql-lint:
 	${POETRY_RUN} sqlfluff lint dbt/models/ --config dbt/.sqlfluff
 

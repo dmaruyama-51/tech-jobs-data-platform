@@ -7,6 +7,10 @@ sources:
     tables:
       - name: lake__joblist
         description: "スクレイピングした求人データ"
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 4, period: day}
+        loaded_at_field: listing_start_date
         columns:
           - name: detail_link
             description: "求人詳細ページのURL"
